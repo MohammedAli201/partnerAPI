@@ -1,939 +1,14 @@
 
-# import os
-# from datetime import datetime, timezone, timedelta
-# from decimal import Decimal
-# from uuid import UUID as PyUUID
-
-# from fastapi import FastAPI, Depends, Header, HTTPException, status
-# from sqlalchemy import func, text
-# from sqlalchemy.orm import Session
-
-# from database import get_db  # engine/Base not needed here
-# from models import Partner, Payout, PayoutQueue
-# from schemas import (
-#     PayoutCreate,
-#     PayoutStatusUpdate,
-#     ExecutorClaimRequest,
-#     ExecutorReport,
-# )
-# from security import verify_api_key
-
-# app = FastAPI(title="Partner Payout API")
-
-# # =========================================================
-# # Partner auth (X-API-Key)
-# # =========================================================
-
-# def get_partner_from_api_key(
-#     x_api_key: str = Header(..., alias="X-API-Key"),
-#     db: Session = Depends(get_db),
-# ) -> Partner:
-#     partners = db.query(Partner).filter(Partner.is_active == True).all()
-#     for p in partners:
-#         if verify_api_key(x_api_key, p.api_key_hash):
-#             return p
-#     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key")
-
-
-# # =========================================================
-# # Executor auth (X-Executor-Token)
-# # =========================================================
-
-# EXECUTOR_TOKEN = os.getenv("EXECUTOR_TOKEN", "change-me")
-
-# def require_executor_token(
-#     x_executor_token: str = Header(..., alias="X-Executor-Token")
-# ):
-#     if x_executor_token != EXECUTOR_TOKEN:
-#         raise HTTPException(status_code=401, detail="Invalid executor token")
-#     return True
-
-
-# # =========================================================
-# # Public partner endpoints
-# # =========================================================
-
-# @app.post("/payouts", status_code=201)
-# def create_payout(
-#     payload: PayoutCreate,
-#     partner: Partner = Depends(get_partner_from_api_key),
-#     db: Session = Depends(get_db),
-# ):
-#     # enforce unique (partner_id, partner_tx_id)
-#     exists = (
-#         db.query(Payout)
-#         .filter(
-#             Payout.partner_id == partner.id,
-#             Payout.partner_tx_id == payload.partner_tx_id,
-#         )
-#         .first()
-#     )
-#     if exists:
-#         raise HTTPException(status_code=409, detail="Duplicate partner_tx_id for this partner")
-
-#     payout = Payout(
-#         partner_id=partner.id,
-#         partner_tx_id=payload.partner_tx_id,
-#         amount=payload.amount,
-#         currency=payload.currency,
-#         recipient=payload.recipient,
-#         provider=payload.provider,
-#         request_payload=payload.request_payload,
-#     )
-
-#     db.add(payout)
-#     db.flush()  # payout.id available
-
-#     # Add to queue
-#     db.add(PayoutQueue(payout_id=payout.id))
-
-#     db.commit()
-#     db.refresh(payout)
-
-#     return {
-#         "id": str(payout.id),
-#         "status": payout.status,
-#         "created_at": payout.created_at,
-#     }
-
-
-# @app.get("/payouts/{payout_id}")
-# def get_payout(
-#     payout_id: PyUUID,
-#     partner: Partner = Depends(get_partner_from_api_key),
-#     db: Session = Depends(get_db),
-# ):
-#     payout = (
-#         db.query(Payout)
-#         .filter(Payout.id == payout_id, Payout.partner_id == partner.id)
-#         .first()
-#     )
-#     if not payout:
-#         raise HTTPException(status_code=404, detail="Payout not found")
-
-#     return {
-#         "id": str(payout.id),
-#         "partner_tx_id": payout.partner_tx_id,
-#         "amount": str(payout.amount),
-#         "currency": payout.currency,
-#         "recipient": payout.recipient,
-#         "provider": payout.provider,
-#         "status": payout.status,
-#         "request_payload": payout.request_payload,
-#         "created_at": payout.created_at,
-#     }
-
-
-# @app.patch("/payouts/{payout_id}/status")
-# def update_payout_status(
-#     payout_id: PyUUID,
-#     body: PayoutStatusUpdate,
-#     partner: Partner = Depends(get_partner_from_api_key),
-#     db: Session = Depends(get_db),
-# ):
-#     payout = (
-#         db.query(Payout)
-#         .filter(Payout.id == payout_id, Payout.partner_id == partner.id)
-#         .first()
-#     )
-#     if not payout:
-#         raise HTTPException(status_code=404, detail="Payout not found")
-
-#     payout.status = body.status.value
-#     db.commit()
-#     db.refresh(payout)
-#     return {"id": str(payout.id), "status": payout.status}
-
-
-# @app.get("/payouts/stats")
-# def payout_stats(
-#     partner: Partner = Depends(get_partner_from_api_key),
-#     db: Session = Depends(get_db),
-# ):
-#     rows = (
-#         db.query(Payout.status, func.count())
-#         .filter(Payout.partner_id == partner.id)
-#         .group_by(Payout.status)
-#         .all()
-#     )
-#     stats = {st: cnt for st, cnt in rows}
-#     return {"payouts": stats, "total": sum(stats.values())}
-
-
-# @app.get("/queue/stats")
-# def queue_stats_global(
-#     partner: Partner = Depends(get_partner_from_api_key),
-#     db: Session = Depends(get_db),
-# ):
-#     # Global queue view (optional). If you want partner-only, remove this endpoint.
-#     rows = db.query(PayoutQueue.status, func.count()).group_by(PayoutQueue.status).all()
-#     stats = {st: cnt for st, cnt in rows}
-#     return {"queue": stats, "total": sum(stats.values())}
-
-
-# @app.get("/queue/stats/me")
-# def queue_stats_me(
-#     partner: Partner = Depends(get_partner_from_api_key),
-#     db: Session = Depends(get_db),
-# ):
-#     rows = (
-#         db.query(PayoutQueue.status, func.count())
-#         .join(Payout, Payout.id == PayoutQueue.payout_id)
-#         .filter(Payout.partner_id == partner.id)
-#         .group_by(PayoutQueue.status)
-#         .all()
-#     )
-#     stats = {st: cnt for st, cnt in rows}
-#     return {"queue": stats, "total": sum(stats.values())}
-
-
-
-# @app.post("/admin/reset-stuck-tasks")
-# def reset_stuck_tasks(db: Session = Depends(get_db)):
-#     """Reset all IN_PROGRESS tasks back to PENDING"""
-   
-    
-#     # Reset queue
-#     result = db.execute(text("""
-#         UPDATE payout_queue 
-#         SET status = 'PENDING', 
-#             lease_until = NULL,
-#             worker_id = NULL
-#         WHERE status = 'IN_PROGRESS'
-#     """))
-    
-#     reset_count = result.rowcount
-    
-#     # Reset payouts
-#     if reset_count > 0:
-#         db.execute(text("""
-#             UPDATE payouts 
-#             SET status = 'PENDING'
-#             WHERE status = 'PROCESSING'
-#         """))
-    
-#     db.commit()
-    
-#     return {
-#         "message": f"Reset {reset_count} stuck tasks",
-#         "reset_count": reset_count
-#     }
-
-# @app.get("/admin/debug/queue")
-# def debug_queue(db: Session = Depends(get_db)):
-#     """Debug endpoint to see queue contents"""
-#     from sqlalchemy import text
-    
-#     queue_items = db.execute(text("""
-#         SELECT 
-#             pq.payout_id,
-#             pq.status as queue_status,
-#             pq.lease_until,
-#             pq.worker_id,
-#             pq.created_at as queue_created,
-#             p.status as payout_status,
-#             p.amount,
-#             p.recipient
-#         FROM payout_queue pq
-#         LEFT JOIN payouts p ON p.id = pq.payout_id
-#         ORDER BY pq.created_at
-#     """)).mappings().all()
-    
-#     return {"queue": [dict(item) for item in queue_items]}
-
-# # =========================================================
-# # Then continue with your existing routes...
-# # =========================================================
-
-# # =========================================================
-# # Internal executor endpoints (worker uses these)
-# # =========================================================
-
-# @app.get("/payouts-audit")
-# def payouts_audit(
-#     partner: Partner = Depends(get_partner_from_api_key),
-#     db: Session = Depends(get_db),
-# ):
-#     rows = db.execute(text("""
-#       SELECT
-#         p.id,
-#         p.partner_tx_id,
-#         p.amount,
-#         p.recipient,
-#         p.provider,
-#         p.status,
-
-#         pq.status       AS queue_status,
-#         pq.worker_id    AS queue_worker_id,
-#         pq.lease_until,
-
-#         pe.executor_id,
-#         pe.balance_before,
-#         pe.balance_after,
-#         pe.ussd_text,
-#         pe.provider_ref,
-#         pe.captured_at
-
-#       FROM payouts p
-#       LEFT JOIN payout_queue pq ON pq.payout_id = p.id
-#       LEFT JOIN payout_evidence pe ON pe.payout_id = p.id
-#       WHERE p.partner_id = :partner_id
-#       ORDER BY p.created_at DESC
-#       LIMIT 100
-#     """), {"partner_id": partner.id}).mappings().all()
-
-#     return {"items": [dict(r) for r in rows]}
-
-
-# @app.get("/stats/summary")
-# def summary_stats(
-#     partner: Partner = Depends(get_partner_from_api_key),
-#     db: Session = Depends(get_db),
-# ):
-#     # Pending in queue (only this partner)
-#     pending = (
-#         db.query(func.count())
-#         .select_from(PayoutQueue)
-#         .join(Payout, Payout.id == PayoutQueue.payout_id)
-#         .filter(Payout.partner_id == partner.id, PayoutQueue.status == "PENDING")
-#         .scalar()
-#     )
-
-#     # In progress in queue (optional)
-#     in_progress = (
-#         db.query(func.count())
-#         .select_from(PayoutQueue)
-#         .join(Payout, Payout.id == PayoutQueue.payout_id)
-#         .filter(Payout.partner_id == partner.id, PayoutQueue.status == "IN_PROGRESS")
-#         .scalar()
-#     )
-
-#     # Failed (business truth) from payouts table
-#     failing = (
-#         db.query(func.count())
-#         .select_from(Payout)
-#         .filter(Payout.partner_id == partner.id, Payout.status == "FAILED")
-#         .scalar()
-#     )
-
-#     return {
-#         "pending": int(pending or 0),
-#         "in_progress": int(in_progress or 0),
-#         "failing": int(failing or 0),
-#         "queue_total": int((pending or 0) + (in_progress or 0)),
-#     }
-
-# @app.post("/internal/executor/claim")
-# def executor_claim(
-#     body: ExecutorClaimRequest,
-#     _auth=Depends(require_executor_token),
-#     db: Session = Depends(get_db),
-# ):
-#     """
-#     Atomically claim jobs from payout_queue.
-#     Uses SKIP LOCKED so multiple executors can run safely.
-#     """
-#     lease_until = datetime.now(timezone.utc) + timedelta(seconds=body.lease_secs)
-
-#     claimed = db.execute(text("""
-#     WITH candidates AS (
-#       SELECT pq.payout_id
-#       FROM payout_queue pq
-#       WHERE
-#         pq.status = 'PENDING'
-#         OR (pq.status = 'IN_PROGRESS' AND pq.lease_until < now())
-#       ORDER BY pq.created_at
-#       FOR UPDATE SKIP LOCKED
-#       LIMIT :limit
-#     )
-#     UPDATE payout_queue pq
-#     SET
-#       status = 'IN_PROGRESS',
-#       lease_until = :lease_until,
-#       worker_id = :worker_id
-#     FROM candidates c
-#     WHERE pq.payout_id = c.payout_id
-#     RETURNING pq.payout_id;
-#     """), {
-#         "limit": body.batch_size,
-#         "lease_until": lease_until,
-#         "worker_id": body.executor_id,
-#     }).mappings().all()
-
-#     if not claimed:
-#         db.commit()
-#         return {"jobs": []}
-
-#     payout_ids = [r["payout_id"] for r in claimed]
-
-#     # Mark business status as PROCESSING (so partner can see it)
-#     db.execute(text("""
-#       UPDATE payouts
-#       SET status='PROCESSING'
-#       WHERE id = ANY(:ids)
-#     """), {"ids": payout_ids})
-
-#     jobs = db.execute(text("""
-#       SELECT
-#         p.id, p.amount, p.currency, p.recipient, p.provider, p.request_payload
-#       FROM payouts p
-#       WHERE p.id = ANY(:ids)
-#       ORDER BY p.created_at
-#     """), {"ids": payout_ids}).mappings().all()
-
-#     db.commit()
-#     return {"jobs": [dict(j) for j in jobs]}
-
-
-# def decide_status(amount: Decimal, bb: Decimal | None, ba: Decimal | None, ussd_text: str):
-#     """
-#     Server decides final status (business truth).
-#     Returns: (new_status, reason_code)
-#     """
-#     t = (ussd_text or "").lower()
-
-#     # Somali phrase examples: insufficient balance
-#     if "kuguma filna" in t or "haraaga" in t:
-#         return ("FAILED", "INSUFFICIENT_BALANCE")
-
-#     # Balance difference check (if we have balances)
-#     if bb is not None and ba is not None:
-#         try:
-#             diff = bb - ba
-#             if diff >= amount:
-#                 return ("SENT", "BALANCE_DIFF_OK")
-#         except Exception:
-#             pass
-
-#     # Generic success signals
-#     if any(k in t for k in ["success", "completed", "approved", "reference", "trx", "txid", "ref"]):
-#         return ("SENT", "USSD_TEXT_OK")
-
-#     return ("FAILED", "AMBIGUOUS")
-
-
-# @app.post("/internal/executor/report")
-# def executor_report(
-#     body: ExecutorReport,
-#     _auth=Depends(require_executor_token),
-#     db: Session = Depends(get_db),
-# ):
-#     """
-#     Worker reports proof. Server:
-#     - stores proof in payout_evidence
-#     - decides SENT/FAILED
-#     - deletes from payout_queue
-#     """
-#     payout = db.query(Payout).filter(Payout.id == body.payout_id).first()
-#     if not payout:
-#         raise HTTPException(status_code=404, detail="Payout not found")
-
-#     q = db.query(PayoutQueue).filter(PayoutQueue.payout_id == payout.id).first()
-#     if not q:
-#         raise HTTPException(status_code=409, detail="Payout not in queue (already finalized?)")
-
-#     # Upsert evidence (requires payout_evidence table)
-#     db.execute(text("""
-#       INSERT INTO payout_evidence (
-#         payout_id, executor_id, balance_before, balance_after, ussd_text, provider_ref
-#       )
-#       VALUES (:pid, :eid, :bb, :ba, :txt, :pref)
-#       ON CONFLICT (payout_id) DO UPDATE SET
-#         executor_id = EXCLUDED.executor_id,
-#         balance_before = EXCLUDED.balance_before,
-#         balance_after  = EXCLUDED.balance_after,
-#         ussd_text = EXCLUDED.ussd_text,
-#         provider_ref = EXCLUDED.provider_ref,
-#         captured_at = now();
-#     """), {
-#         "pid": str(payout.id),
-#         "eid": body.executor_id,
-#         "bb": body.balance_before,
-#         "ba": body.balance_after,
-#         "txt": body.ussd_text or "",
-#         "pref": body.provider_ref,
-#     })
-
-#     new_status, reason = decide_status(
-#         amount=payout.amount,
-#         bb=body.balance_before,
-#         ba=body.balance_after,
-#         ussd_text=body.ussd_text or "",
-#     )
-
-#     payout.status = new_status
-
-#     # finalize: remove from queue
-#     db.execute(text("DELETE FROM payout_queue WHERE payout_id=:pid"), {"pid": str(payout.id)})
-
-#     db.commit()
-#     db.refresh(payout)
-
-#     return {"payout_id": str(payout.id), "status": payout.status, "reason": reason}
-
-
-# # main.py
-# import os
-# import json
-# from datetime import datetime, timezone, timedelta
-# from decimal import Decimal
-# from uuid import UUID as PyUUID
-
-# from fastapi import FastAPI, Depends, Header, HTTPException, status
-# from sqlalchemy import func, text
-# from sqlalchemy.orm import Session
-
-# from database import get_db
-# from models import Partner, Payout, PayoutQueue
-# from schemas import PayoutCreate, PayoutStatusUpdate, ExecutorClaimRequest, ExecutorReport
-# from security import verify_api_key, validate_api_key_format, extract_prefix
-
-# app = FastAPI(title="Partner Payout API")
-
-# # =========================
-# # Auth
-# # =========================
-
-# EXECUTOR_TOKEN = os.getenv("EXECUTOR_TOKEN", "change-me")
-
-# def require_executor_token(x_executor_token: str = Header(..., alias="X-Executor-Token")):
-#     if x_executor_token != EXECUTOR_TOKEN:
-#         raise HTTPException(status_code=401, detail="Invalid executor token")
-#     return True
-
-# def get_partner_from_api_key(
-#     x_api_key: str = Header(..., alias="X-API-Key"),
-#     db: Session = Depends(get_db),
-# ) -> Partner:
-#     if not validate_api_key_format(x_api_key):
-#         raise HTTPException(status_code=401, detail="Invalid API key format")
-
-#     prefix = extract_prefix(x_api_key)
-#     partner = (
-#         db.query(Partner)
-#         .filter(Partner.is_active == True, Partner.api_key_prefix == prefix)
-#         .first()
-#     )
-#     if not partner or not verify_api_key(x_api_key, partner.api_key_hash):
-#         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key")
-#     return partner
-
-# # =========================
-# # Business status decision
-# # =========================
-
-# def is_plausible_balance(x: Decimal | None) -> bool:
-#     if x is None:
-#         return False
-#     return Decimal("0") <= x <= Decimal("1000000")  # adjust to your reality
-
-# def decide_status(amount: Decimal, bb: Decimal | None, ba: Decimal | None, ussd_text: str):
-#     """
-#     SAFE BY DEFAULT:
-#     Mark SENT only with strong evidence.
-#     """
-#     t = (ussd_text or "").lower()
-
-#     # Insufficient balance signals
-#     if "kuguma filna" in t or "haraaga" in t:
-#         return ("FAILED", "INSUFFICIENT_BALANCE")
-
-#     # Wrong-menu signals (weather/settings etc.)
-#     if "sunrise" in t or "settings" in t or "°" in (ussd_text or ""):
-#         return ("FAILED", "WRONG_SCREEN")
-
-#     # Strong success signals (add provider-specific Somali/English words here)
-#     strong_success = any(k in t for k in ["success", "successful", "completed", "reference", "tixraac", "trx", "txid", "ref:"])
-#     if strong_success:
-#         return ("SENT", "USSD_STRONG_OK")
-
-#     # Balance diff only if balances are plausible
-#     if is_plausible_balance(bb) and is_plausible_balance(ba):
-#         diff = bb - ba
-#         # allow small overhead, but block crazy diffs
-#         if diff >= amount and diff <= (amount * Decimal("1.25")):
-#             return ("SENT", "BALANCE_DIFF_OK")
-
-#     # Otherwise: ambiguous = FAILED (or you can make NEEDS_REVIEW if you want)
-#     return ("FAILED", "AMBIGUOUS")
-
-# # =========================
-# # Partner endpoints
-# # =========================
-
-# @app.post("/payouts-create", status_code=201)
-# def create_payout(
-#     payload: PayoutCreate,
-#     partner: Partner = Depends(get_partner_from_api_key),
-#     db: Session = Depends(get_db),
-# ):
-#     # Convert the dict to a JSON string for storage in Text column
-#     request_payload_str = json.dumps(payload.request_payload)
-    
-#     payout = Payout(
-#         partner_id=partner.id,
-#         partner_tx_id=payload.partner_tx_id,
-#         amount=payload.amount,
-#         currency=payload.currency,
-#         recipient=payload.recipient,
-#         provider=payload.provider,
-#         request_payload=request_payload_str,  # ✅ Store as JSON string
-#         status="RECEIVED",
-#         created_at=datetime.now(timezone.utc),
-#         updated_at=datetime.now(timezone.utc),
-#     )
-
-#     db.add(payout)
-#     db.flush()  # payout.id available
-
-#     # Enqueue (one row per payout)
-#     db.add(PayoutQueue(
-#         payout_id=payout.id,
-#         status="PENDING",
-#         created_at=datetime.now(timezone.utc)
-#     ))
-
-#     try:
-#         db.commit()
-#     except Exception as e:
-#         db.rollback()
-#         # Duplicate partner_tx_id is enforced by DB unique index
-#         # Better: catch IntegrityError specifically, but keeping generic for simplicity
-#         if "ux_payout_partner_tx" in str(e):
-#             raise HTTPException(status_code=409, detail="Duplicate partner_tx_id for this partner")
-#         raise
-
-#     db.refresh(payout)
-#     return {"id": str(payout.id), "status": payout.status, "created_at": payout.created_at}
-
-# @app.get("/payouts/{payout_id}")
-# def get_payout(
-#     payout_id: PyUUID,
-#     partner: Partner = Depends(get_partner_from_api_key),
-#     db: Session = Depends(get_db),
-# ):
-#     payout = (
-#         db.query(Payout)
-#         .filter(Payout.id == payout_id, Payout.partner_id == partner.id)
-#         .first()
-#     )
-#     if not payout:
-#         raise HTTPException(status_code=404, detail="Payout not found")
-
-#     return {
-#         "id": str(payout.id),
-#         "partner_tx_id": payout.partner_tx_id,
-#         "amount": str(payout.amount),
-#         "currency": payout.currency,
-#         "recipient": payout.recipient,
-#         "provider": payout.provider,
-#         "status": payout.status,
-#         "request_payload": payout.request_payload,
-#         "created_at": payout.created_at,
-#     }
-
-# @app.patch("/payouts/{payout_id}/status")
-# def update_payout_status(
-#     payout_id: PyUUID,
-#     body: PayoutStatusUpdate,
-#     partner: Partner = Depends(get_partner_from_api_key),
-#     db: Session = Depends(get_db),
-# ):
-#     """
-#     Strict transitions: partner CANNOT set SENT/FAILED.
-#     Only allowed:
-#       RECEIVED -> (optional: partner cancel flow if you add CANCELLED)
-#     For now: we only allow partner to set nothing meaningful.
-#     """
-#     payout = (
-#         db.query(Payout)
-#         .filter(Payout.id == payout_id, Payout.partner_id == partner.id)
-#         .first()
-#     )
-#     if not payout:
-#         raise HTTPException(status_code=404, detail="Payout not found")
-
-#     # Hard rule: partner cannot finalize status
-#     if body.status in ("SENT", "FAILED", "PROCESSING"):
-#         raise HTTPException(status_code=403, detail="Partner cannot set this status")
-
-#     payout.status = body.status
-#     payout.updated_at = datetime.now(timezone.utc)
-#     db.commit()
-#     db.refresh(payout)
-#     return {"id": str(payout.id), "status": payout.status}
-
-
-
-# @app.get("/queue/stats/me")
-# def queue_stats_me(
-#     partner: Partner = Depends(get_partner_from_api_key),
-#     db: Session = Depends(get_db),
-# ):
-#     rows = (
-#         db.query(PayoutQueue.status, func.count())
-#         .join(Payout, Payout.id == PayoutQueue.payout_id)
-#         .filter(Payout.partner_id == partner.id)
-#         .group_by(PayoutQueue.status)
-#         .all()
-#     )
-#     stats = {st: cnt for st, cnt in rows}
-#     return {"queue": stats, "total": sum(stats.values())}
-
-# @app.get("/stats/summary")
-# def summary_stats(
-#     partner: Partner = Depends(get_partner_from_api_key),
-#     db: Session = Depends(get_db),
-# ):
-#     pending = (
-#         db.query(func.count())
-#         .select_from(PayoutQueue)
-#         .join(Payout, Payout.id == PayoutQueue.payout_id)
-#         .filter(Payout.partner_id == partner.id, PayoutQueue.status == "PENDING")
-#         .scalar()
-#     )
-#     in_progress = (
-#         db.query(func.count())
-#         .select_from(PayoutQueue)
-#         .join(Payout, Payout.id == PayoutQueue.payout_id)
-#         .filter(Payout.partner_id == partner.id, PayoutQueue.status == "IN_PROGRESS")
-#         .scalar()
-#     )
-#     failed = (
-#         db.query(func.count())
-#         .select_from(Payout)
-#         .filter(Payout.partner_id == partner.id, Payout.status == "FAILED")
-#         .scalar()
-#     )
-#     sent = (
-#         db.query(func.count())
-#         .select_from(Payout)
-#         .filter(Payout.partner_id == partner.id, Payout.status == "SENT")
-#         .scalar()
-#     )
-#     received = (
-#         db.query(func.count())
-#         .select_from(Payout)
-#         .filter(Payout.partner_id == partner.id, Payout.status == "RECEIVED")
-#         .scalar()
-#     )
-#     processing = (
-#         db.query(func.count())
-#         .select_from(Payout)
-#         .filter(Payout.partner_id == partner.id, Payout.status == "PROCESSING")
-#         .scalar()
-#     )
-
-#     return {
-#         "received": int(received or 0),
-#         "processing": int(processing or 0),
-#         "sent": int(sent or 0),
-#         "failed": int(failed or 0),
-#         "queue_pending": int(pending or 0),
-#         "queue_in_progress": int(in_progress or 0),
-#     }
-
-# # =========================
-# # Admin endpoints (protected)
-# # =========================
-
-# @app.post("/admin/reset-stuck-tasks")
-# def reset_stuck_tasks(_auth=Depends(require_executor_token), db: Session = Depends(get_db)):
-#     """
-#     ONLY reset queue leases; do NOT set payouts to FAILED.
-#     This prevents "FAILED with null captured_at".
-#     """
-#     result = db.execute(text("""
-#         UPDATE payout_queue
-#         SET status = 'PENDING',
-#             lease_until = NULL,
-#             worker_id = NULL
-#         WHERE status = 'IN_PROGRESS'
-#           AND lease_until IS NOT NULL
-#           AND lease_until < now()
-#     """))
-#     db.commit()
-#     return {"message": f"Reset {result.rowcount} expired leases", "reset_count": result.rowcount}
-
-# @app.get("/admin/debug/queue")
-# def debug_queue(_auth=Depends(require_executor_token), db: Session = Depends(get_db)):
-#     rows = db.execute(text("""
-#         SELECT
-#             pq.payout_id,
-#             pq.status AS queue_status,
-#             pq.lease_until,
-#             pq.worker_id,
-#             pq.created_at AS queue_created,
-#             p.status AS payout_status,
-#             p.amount,
-#             p.recipient
-#         FROM payout_queue pq
-#         LEFT JOIN payouts p ON p.id = pq.payout_id
-#         ORDER BY pq.created_at
-#         LIMIT 500
-#     """)).mappings().all()
-#     return {"queue": [dict(r) for r in rows]}
-
-# # =========================
-# # Executor endpoints (protected)
-# # =========================
-
-# @app.post("/internal/executor/claim")
-# def executor_claim(
-#     body: ExecutorClaimRequest,
-#     _auth=Depends(require_executor_token),
-#     db: Session = Depends(get_db),
-# ):
-#     """
-#     Atomic claim with SKIP LOCKED.
-#     Correct UUID handling: use ::uuid[] cast in later queries.
-#     """
-#     lease_until = datetime.now(timezone.utc) + timedelta(seconds=body.lease_secs)
-
-#     claimed = db.execute(text("""
-#         WITH candidates AS (
-#             SELECT pq.payout_id
-#             FROM payout_queue pq
-#             WHERE
-#                 pq.status = 'PENDING'
-#                 OR (pq.status = 'IN_PROGRESS' AND pq.lease_until < now())
-#             ORDER BY pq.created_at
-#             FOR UPDATE SKIP LOCKED
-#             LIMIT :limit
-#         )
-#         UPDATE payout_queue pq
-#         SET
-#             status = 'IN_PROGRESS',
-#             lease_until = :lease_until,
-#             worker_id = :worker_id
-#         FROM candidates c
-#         WHERE pq.payout_id = c.payout_id
-#         RETURNING pq.payout_id;
-#     """), {
-#         "limit": body.batch_size,
-#         "lease_until": lease_until,
-#         "worker_id": body.executor_id,
-#     }).mappings().all()
-
-#     payout_ids = [str(r["payout_id"]) for r in claimed]
-
-#     if not payout_ids:
-#         db.commit()
-#         return {"jobs": []}
-
-#     # Strict transition: only set PROCESSING if it is still RECEIVED
-#     db.execute(text("""
-#         UPDATE payouts
-#         SET status = 'PROCESSING',
-#             updated_at = now()
-#         WHERE id = ANY(:ids::uuid[])
-#           AND status = 'RECEIVED'
-#     """), {"ids": payout_ids})
-
-#     jobs = db.execute(text("""
-#         SELECT
-#             p.id, p.amount, p.currency, p.recipient, p.provider, p.request_payload
-#         FROM payouts p
-#         WHERE p.id = ANY(:ids::uuid[])
-#         ORDER BY p.created_at
-#     """), {"ids": payout_ids}).mappings().all()
-
-#     db.commit()
-#     return {"jobs": [dict(j) for j in jobs]}
-
-# @app.post("/internal/executor/report")
-# def executor_report(
-#     body: ExecutorReport,
-#     _auth=Depends(require_executor_token),
-#     db: Session = Depends(get_db),
-# ):
-#     """
-#     Report proof:
-#     - must be currently leased by same executor
-#     - evidence UPSERT sets captured_at (always)
-#     - finalize payout SENT/FAILED
-#     - delete queue row
-#     """
-#     pid = str(body.payout_id)
-
-#     # Ensure queue row exists and is leased to this executor and not expired
-#     q = db.execute(text("""
-#         SELECT payout_id, worker_id, lease_until, status
-#         FROM payout_queue
-#         WHERE payout_id = :pid::uuid
-#         FOR UPDATE
-#     """), {"pid": pid}).mappings().first()
-
-#     if not q:
-#         raise HTTPException(status_code=409, detail="Payout not in queue (already finalized?)")
-
-#     if q["status"] != "IN_PROGRESS":
-#         raise HTTPException(status_code=409, detail="Payout is not IN_PROGRESS")
-
-#     if q["worker_id"] != body.executor_id:
-#         raise HTTPException(status_code=403, detail="This payout is leased to another executor")
-
-#     if q["lease_until"] is not None:
-#         # If lease expired, reject report (forces executor to re-claim cleanly)
-#         # You can loosen this if you want to accept late reports.
-#         if q["lease_until"] < datetime.now(timezone.utc):
-#             raise HTTPException(status_code=409, detail="Lease expired; re-claim required")
-
-#     payout = db.query(Payout).filter(Payout.id == body.payout_id).first()
-#     if not payout:
-#         raise HTTPException(status_code=404, detail="Payout not found")
-
-#     # Evidence upsert ALWAYS sets captured_at
-#     db.execute(text("""
-#         INSERT INTO payout_evidence (
-#             payout_id, executor_id, balance_before, balance_after, ussd_text, provider_ref, captured_at
-#         )
-#         VALUES (
-#             :pid::uuid, :eid, :bb, :ba, :txt, :pref, now()
-#         )
-#         ON CONFLICT (payout_id) DO UPDATE SET
-#             executor_id = EXCLUDED.executor_id,
-#             balance_before = EXCLUDED.balance_before,
-#             balance_after  = EXCLUDED.balance_after,
-#             ussd_text      = EXCLUDED.ussd_text,
-#             provider_ref   = EXCLUDED.provider_ref,
-#             captured_at    = now();
-#     """), {
-#         "pid": pid,
-#         "eid": body.executor_id,
-#         "bb": body.balance_before,
-#         "ba": body.balance_after,
-#         "txt": body.ussd_text or "",
-#         "pref": body.provider_ref,
-#     })
-
-#     new_status, reason = decide_status(
-#         amount=payout.amount,
-#         bb=body.balance_before,
-#         ba=body.balance_after,
-#         ussd_text=body.ussd_text or "",
-#     )
-
-#     # Strict transition: only PROCESSING -> SENT/FAILED
-#     if payout.status != "PROCESSING":
-#         # If it was RECEIVED (race), you can still finalize safely; but keep strict by default:
-#         raise HTTPException(status_code=409, detail=f"Invalid payout status for finalize: {payout.status}")
-
-#     payout.status = new_status
-#     payout.updated_at = datetime.now(timezone.utc)
-
-#     # Remove from queue only after evidence written
-#     db.execute(text("DELETE FROM payout_queue WHERE payout_id = :pid::uuid"), {"pid": pid})
-
-#     db.commit()
-#     return {"payout_id": pid, "status": payout.status, "reason": reason}
-
 
 
 
 
 # main.py - PRODUCTION READY
 import os
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+
 import json
 import logging
 import structlog
@@ -980,6 +55,10 @@ app = FastAPI(
     redoc_url=None
 )
 
+templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
 # Setup middleware
 setup_middleware(app)
 app.state.limiter = limiter
@@ -990,9 +69,15 @@ app.state.limiter = limiter
 
 EXECUTOR_TOKEN = settings.executor_token
 
-def require_executor_token(x_executor_token: str = Header(..., alias="X-Executor-Token")):
+# def require_executor_token(x_executor_token: str = Header(..., alias="X-Executor-Token")):
+#     if x_executor_token != EXECUTOR_TOKEN:
+#         logger.warning("Invalid executor token attempted")
+#         raise HTTPException(status_code=401, detail="Invalid executor token")
+#     return True
+def require_executor_token(x_executor_token: str | None = Header(None, alias="X-Executor-Token")):
+    if not x_executor_token:
+        raise HTTPException(status_code=401, detail="Missing X-Executor-Token")
     if x_executor_token != EXECUTOR_TOKEN:
-        logger.warning("Invalid executor token attempted")
         raise HTTPException(status_code=401, detail="Invalid executor token")
     return True
 
@@ -1385,6 +470,202 @@ def debug_queue(db: Session = Depends(get_db)):
 # =========================
 # Enhanced Admin Endpoints
 # =========================
+# =========================
+# Admin Dashboard (UI + API)
+# =========================
+
+@app.get("/admin", response_class=HTMLResponse)
+def admin_dashboard(request: Request):
+    """
+    Admin UI page (token is entered in the browser and used in JS via header).
+    """
+    return templates.TemplateResponse("admin.html", {"request": request})
+
+
+@app.get("/admin/api/summary")
+def admin_summary(
+    request: Request,
+    _auth = Depends(require_executor_token),
+    db: Session = Depends(get_db),
+):
+    """
+    Global summary (all partners) for admin view.
+    """
+    row = db.execute(text("""
+        SELECT
+            COUNT(*) FILTER (WHERE status = 'RECEIVED')   AS received,
+            COUNT(*) FILTER (WHERE status = 'PROCESSING') AS processing,
+            COUNT(*) FILTER (WHERE status = 'SENT')       AS sent,
+            COUNT(*) FILTER (WHERE status = 'FAILED')     AS failed
+        FROM payouts
+    """)).first()
+
+    qrow = db.execute(text("""
+        SELECT
+            COUNT(*) FILTER (WHERE status = 'PENDING')     AS pending,
+            COUNT(*) FILTER (WHERE status = 'IN_PROGRESS') AS in_progress,
+            SUM(CASE WHEN status='IN_PROGRESS' AND lease_until < now() THEN 1 ELSE 0 END) AS expired
+        FROM payout_queue
+    """)).first()
+
+    return {
+        "payouts": {
+            "received": row[0] or 0,
+            "processing": row[1] or 0,
+            "sent": row[2] or 0,
+            "failed": row[3] or 0,
+        },
+        "queue": {
+            "pending": qrow[0] or 0,
+            "in_progress": qrow[1] or 0,
+            "expired": qrow[2] or 0,
+        },
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+@app.get("/admin/api/payouts")
+def admin_list_payouts(
+    request: Request,
+    _auth = Depends(require_executor_token),
+    db: Session = Depends(get_db),
+    q: str | None = None,              # search text (recipient / partner_tx_id / provider_ref)
+    status: str | None = None,         # payout status filter
+    limit: int = 50,
+    offset: int = 0,
+):
+    """
+    Paginated payouts list with simple filtering.
+    """
+    limit = max(1, min(limit, 200))
+    offset = max(0, offset)
+
+    params: Dict[str, Any] = {"limit": limit, "offset": offset}
+
+    where = ["1=1"]
+    if status:
+        where.append("p.status = :status")
+        params["status"] = status
+
+    if q:
+        # Search recipient, partner_tx_id, provider_ref (from evidence)
+        where.append("""
+            (
+              p.recipient ILIKE :q
+              OR p.partner_tx_id ILIKE :q
+              OR EXISTS (
+                SELECT 1 FROM payout_evidence e
+                WHERE e.payout_id = p.id AND e.provider_ref ILIKE :q
+              )
+            )
+        """)
+        params["q"] = f"%{q}%"
+
+    total = db.execute(text(f"""
+        SELECT COUNT(*)
+        FROM payouts p
+        WHERE {" AND ".join(where)}
+    """), params).scalar() or 0
+
+    rows = db.execute(text(f"""
+        SELECT
+            p.id,
+            p.partner_id,
+            p.partner_tx_id,
+            p.amount,
+            p.currency,
+            p.recipient,
+            p.provider,
+            p.status,
+            p.created_at,
+            p.updated_at,
+            pq.status AS queue_status,
+            pq.worker_id,
+            pq.lease_until
+        FROM payouts p
+        LEFT JOIN payout_queue pq ON pq.payout_id = p.id
+        WHERE {" AND ".join(where)}
+        ORDER BY p.created_at DESC
+        LIMIT :limit OFFSET :offset
+    """), params).mappings().all()
+
+    return {
+        "total": int(total),
+        "limit": limit,
+        "offset": offset,
+        "items": [dict(r) for r in rows],
+    }
+
+
+@app.get("/admin/api/payouts/{payout_id}")
+def admin_payout_details(
+    request: Request,
+    payout_id: str,
+    _auth = Depends(require_executor_token),
+    db: Session = Depends(get_db),
+):
+    """
+    One payout + evidence + queue row.
+    """
+    payout = db.execute(text("""
+        SELECT
+            p.id, p.partner_id, p.partner_tx_id, p.amount, p.currency,
+            p.recipient, p.provider, p.status, p.request_payload,
+            p.created_at, p.updated_at,
+            pq.status AS queue_status, pq.worker_id, pq.lease_until, pq.created_at AS queue_created
+        FROM payouts p
+        LEFT JOIN payout_queue pq ON pq.payout_id = p.id
+        WHERE p.id = :id
+    """), {"id": payout_id}).mappings().first()
+
+    if not payout:
+        raise HTTPException(status_code=404, detail="Payout not found")
+
+    evidence = db.execute(text("""
+        SELECT
+            executor_id, balance_before, balance_after, ussd_text, provider_ref, captured_at
+        FROM payout_evidence
+        WHERE payout_id = :id
+        ORDER BY captured_at DESC
+        LIMIT 1
+    """), {"id": payout_id}).mappings().first()
+
+    out = dict(payout)
+    out["request_payload"] = json.loads(out["request_payload"]) if out.get("request_payload") else None
+    out["evidence"] = dict(evidence) if evidence else None
+    return out
+
+
+@app.get("/admin/api/queue")
+def admin_queue(
+    request: Request,
+    _auth = Depends(require_executor_token),
+    db: Session = Depends(get_db),
+    limit: int = 100,
+):
+    """
+    Queue snapshot (most recent first).
+    """
+    limit = max(1, min(limit, 500))
+    rows = db.execute(text("""
+        SELECT
+            pq.payout_id,
+            pq.status as queue_status,
+            pq.lease_until,
+            pq.worker_id,
+            pq.created_at as queue_created,
+            p.status as payout_status,
+            p.amount,
+            p.currency,
+            p.recipient,
+            p.partner_tx_id
+        FROM payout_queue pq
+        LEFT JOIN payouts p ON p.id = pq.payout_id
+        ORDER BY pq.created_at DESC
+        LIMIT :limit
+    """), {"limit": limit}).mappings().all()
+
+    return {"items": [dict(r) for r in rows]}
 
 @app.post("/admin/reset-stuck-tasks")
 @limiter.limit("10/minute")

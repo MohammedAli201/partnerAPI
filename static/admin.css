@@ -1,0 +1,49 @@
+:root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+body { margin: 0; background: #0b0f14; color: #e7eef7; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 20px; }
+.top { display:flex; gap: 16px; align-items:center; justify-content:space-between; }
+h1 { margin: 0; font-size: 22px; }
+h2 { margin: 0; font-size: 18px; }
+.muted { color: #9bb0c6; font-size: 13px; margin: 6px 0 0; }
+
+.tokenBox { display:flex; gap: 8px; align-items:center; }
+input, select {
+  background: #121a24; border: 1px solid #243244; color: #e7eef7;
+  padding: 10px 12px; border-radius: 10px; outline: none;
+}
+input { width: 360px; max-width: 52vw; }
+button {
+  background: #2b7cff; border: 0; color: white;
+  padding: 10px 14px; border-radius: 10px; cursor: pointer;
+}
+button.ghost { background: transparent; border: 1px solid #243244; color: #e7eef7; }
+
+.cards { display:grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin: 18px 0; }
+.card { background:#111823; border:1px solid #243244; border-radius:14px; padding: 12px; }
+.card .k { color:#9bb0c6; font-size: 12px; }
+.card .v { font-size: 18px; font-weight: 700; margin-top: 6px; }
+
+.panel { background:#111823; border:1px solid #243244; border-radius:14px; padding: 14px; margin: 14px 0; }
+.panelHead { display:flex; justify-content:space-between; gap: 10px; align-items:center; margin-bottom: 12px; }
+.filters { display:flex; gap: 8px; align-items:center; flex-wrap:wrap; }
+
+.tableWrap { overflow:auto; border-radius: 12px; border:1px solid #243244; }
+table { width:100%; border-collapse: collapse; min-width: 980px; }
+th, td { padding: 10px 10px; border-bottom: 1px solid #1f2b3a; font-size: 13px; }
+th { text-align:left; color:#9bb0c6; background: #0f1620; position: sticky; top: 0; }
+tr:hover td { background: #0f1620; }
+.badge { padding: 4px 8px; border-radius: 999px; border:1px solid #243244; display:inline-block; }
+.badge.SENT { border-color:#1f6; }
+.badge.FAILED { border-color:#f66; }
+.badge.PROCESSING { border-color:#fc6; }
+.badge.RECEIVED { border-color:#6cf; }
+
+.pager { display:flex; justify-content:space-between; align-items:center; margin-top: 10px; }
+
+.drawer {
+  display:none; position:fixed; inset:0; background: rgba(0,0,0,.55);
+  align-items:center; justify-content:center; padding: 20px;
+}
+.drawerCard { width:min(920px, 96vw); background:#0f1620; border:1px solid #243244; border-radius:14px; padding: 14px; }
+.drawerHead { display:flex; justify-content:space-between; align-items:center; }
+.pre { background:#0b0f14; border:1px solid #243244; border-radius:12px; padding: 12px; overflow:auto; max-height: 70vh; }

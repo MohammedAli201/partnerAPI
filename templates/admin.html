@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="/static/admin.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <h1>Admin Dashboard</h1>
+        <p class="muted">Transactions + Queue monitor</p>
+      </div>
+
+      <div class="tokenBox">
+        <input id="token" type="password" placeholder="Paste X-Executor-Token…" />
+        <button id="saveToken">Save</button>
+        <button id="clearToken" class="ghost">Clear</button>
+      </div>
+    </header>
+
+    <section class="cards" id="summary">
+      <div class="card"><div class="k">RECEIVED</div><div class="v" id="s_received">-</div></div>
+      <div class="card"><div class="k">PROCESSING</div><div class="v" id="s_processing">-</div></div>
+      <div class="card"><div class="k">SENT</div><div class="v" id="s_sent">-</div></div>
+      <div class="card"><div class="k">FAILED</div><div class="v" id="s_failed">-</div></div>
+      <div class="card"><div class="k">QUEUE PENDING</div><div class="v" id="q_pending">-</div></div>
+      <div class="card"><div class="k">IN PROGRESS</div><div class="v" id="q_inprogress">-</div></div>
+      <div class="card"><div class="k">EXPIRED LEASE</div><div class="v" id="q_expired">-</div></div>
+    </section>
+
+    <section class="panel">
+      <div class="panelHead">
+        <h2>Transactions</h2>
+        <div class="filters">
+          <input id="search" placeholder="Search recipient / partner_tx_id / provider_ref" />
+          <select id="status">
+            <option value="">All statuses</option>
+            <option>RECEIVED</option>
+            <option>PROCESSING</option>
+            <option>SENT</option>
+            <option>FAILED</option>
+          </select>
+          <button id="refresh">Refresh</button>
+        </div>
+      </div>
+
+      <div class="tableWrap">
+        <table id="payouts">
+          <thead>
+            <tr>
+              <th>Created</th>
+              <th>Recipient</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Queue</th>
+              <th>Worker</th>
+              <th>Partner Tx</th>
+              <th>ID</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="pager">
+        <button id="prev" class="ghost">Prev</button>
+        <div class="muted" id="pageInfo">-</div>
+        <button id="next" class="ghost">Next</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panelHead">
+        <h2>Queue</h2>
+        <div class="filters">
+          <button id="refreshQueue">Refresh Queue</button>
+        </div>
+      </div>
+
+      <div class="tableWrap">
+        <table id="queue">
+          <thead>
+            <tr>
+              <th>Queued</th>
+              <th>Payout</th>
+              <th>Queue Status</th>
+              <th>Lease Until</th>
+              <th>Worker</th>
+              <th>Recipient</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="drawer" id="drawer">
+      <div class="drawerCard">
+        <div class="drawerHead">
+          <h3>Payout Details</h3>
+          <button id="closeDrawer" class="ghost">Close</button>
+        </div>
+        <pre id="details" class="pre"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/admin.js"></script>
+</body>
+</html>
