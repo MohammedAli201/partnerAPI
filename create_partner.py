@@ -1,27 +1,40 @@
+# createpartner.py
+import sys
 from sqlalchemy.orm import Session
-from database import SessionLocal, Base, engine
+from database import SessionLocal
 from models import Partner
-from security import hash_api_key
-import secrets
-
-Base.metadata.create_all(bind=engine)
-
+from security import generate_api_key
+from database import SessionLocal
+from models import Partner
+from security import generate_api_key
 def main():
+    if len(sys.argv) < 2:
+        print("Usage: python createpartner.py 'Partner Name'")
+        sys.exit(1)
+
+    name = sys.argv[1].strip()
+    display_key, prefix, stored_hash = generate_api_key()
+
     db: Session = SessionLocal()
+    try:
+        p = Partner(
+            name=name,
+            api_key_prefix=prefix,
+            api_key_hash=stored_hash,
+            is_active=True,
+        )
+        db.add(p)
+        db.commit()
+        db.refresh(p)
 
-    api_key = secrets.token_urlsafe(32)
-    p = Partner(
-        name="Test Partner",
-        api_key_hash=hash_api_key(api_key),
-        is_active=True,
-    )
-    db.add(p)
-    db.commit()
-    db.refresh(p)
-    db.close()
-
-    print("Partner ID:", p.id)
-    print("API Key (save this, cannot be recovered):", api_key)
+        print("Partner created:")
+        print("  id:", p.id)
+        print("  name:", p.name)
+        print("\nAPI Key (give to partner, store once):")
+        print(display_key)
+        print("\nIMPORTANT: You will not be able to show this key again.")
+    finally:
+        db.close()
 
 if __name__ == "__main__":
     main()
