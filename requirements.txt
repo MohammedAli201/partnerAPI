@@ -2,23 +2,16 @@ fastapi
 uvicorn[standard]
 gunicorn
 
-sqlalchemy
-psycopg[binary]
+sqlalchemy>=2.0
+psycopg[binary]>=3.1
+psycopg2-binary>=2.9
 
 pydantic
 pydantic-settings
-
 python-dotenv
-
 structlog
-
 slowapi
-
 tenacity
 requests
-
 firebase-admin
 jinja2
-slowapi
-
-psycopg[binary]

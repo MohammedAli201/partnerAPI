@@ -8,6 +8,7 @@ import os
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import text, bindparam
 
 import json
 import logging
@@ -722,6 +723,102 @@ def reset_stuck_tasks(
 # Enhanced Executor Endpoints
 # =========================
 
+# @app.post("/internal/executor/claim")
+# @limiter.limit("30/minute")
+# def executor_claim(
+#     request: Request,
+#     body: ExecutorClaimRequest,
+#     _auth = Depends(require_executor_token),
+#     db: Session = Depends(get_db),
+# ):
+#     """
+#     Enhanced claim with better logging and validation
+#     """
+#     logger.info("Executor claim attempt",
+#                executor_id=body.executor_id,
+#                batch_size=body.batch_size,
+#                lease_secs=body.lease_secs)
+    
+#     # Validate lease time
+#     if body.lease_secs > 600:  # Max 10 minutes
+#         raise HTTPException(status_code=400, detail="Lease time too long (max 600 seconds)")
+    
+#     if body.batch_size > 20:  # Max 20 tasks per claim
+#         raise HTTPException(status_code=400, detail="Batch size too large (max 20)")
+    
+#     lease_until = datetime.now(timezone.utc) + timedelta(seconds=body.lease_secs)
+    
+#     # Atomic claim
+#     claimed = db.execute(text("""
+#         WITH candidates AS (
+#             SELECT pq.payout_id
+#             FROM payout_queue pq
+#             JOIN payouts p ON p.id = pq.payout_id
+#             WHERE (
+#                 pq.status = 'PENDING'
+#                 OR (pq.status = 'IN_PROGRESS' AND pq.lease_until < now())
+#             )
+#             AND p.status = 'RECEIVED'  # Only claim RECEIVED payouts
+#             ORDER BY pq.created_at
+#             FOR UPDATE SKIP LOCKED
+#             LIMIT :limit
+#         )
+#         UPDATE payout_queue pq
+#         SET
+#             status = 'IN_PROGRESS',
+#             lease_until = :lease_until,
+#             worker_id = :worker_id
+#         FROM candidates c
+#         WHERE pq.payout_id = c.payout_id
+#         RETURNING pq.payout_id;
+#     """), {
+#         "limit": body.batch_size,
+#         "lease_until": lease_until,
+#         "worker_id": body.executor_id,
+#     }).mappings().all()
+
+#     payout_ids = [str(r["payout_id"]) for r in claimed]
+
+#     if not payout_ids:
+#         db.commit()
+#         return {"jobs": [], "message": "No jobs available"}
+
+#     # Update payout status
+#     db.execute(text("""
+#         UPDATE payouts
+#         SET status = 'PROCESSING',
+#             updated_at = now()
+#         WHERE id = ANY(:ids::uuid[])
+#           AND status = 'RECEIVED'
+#     """), {"ids": payout_ids})
+
+#     # Get job details
+#     jobs = db.execute(text("""
+#         SELECT
+#             p.id,
+#             p.amount,
+#             p.currency,
+#             p.recipient,
+#             p.provider,
+#             p.request_payload
+#         FROM payouts p
+#         WHERE p.id = ANY(:ids::uuid[])
+#         ORDER BY p.created_at
+#     """), {"ids": payout_ids}).mappings().all()
+    
+#     db.commit()
+    
+#     logger.info("Executor claimed jobs",
+#                executor_id=body.executor_id,
+#                job_count=len(jobs),
+#                payout_ids=payout_ids)
+    
+#     return {
+#         "jobs": [dict(j) for j in jobs],
+#         "lease_until": lease_until.isoformat(),
+#         "count": len(jobs)
+#     }
+
 @app.post("/internal/executor/claim")
 @limiter.limit("30/minute")
 def executor_claim(
@@ -730,24 +827,23 @@ def executor_claim(
     _auth = Depends(require_executor_token),
     db: Session = Depends(get_db),
 ):
-    """
-    Enhanced claim with better logging and validation
-    """
-    logger.info("Executor claim attempt",
-               executor_id=body.executor_id,
-               batch_size=body.batch_size,
-               lease_secs=body.lease_secs)
-    
+    logger.info(
+        "Executor claim attempt",
+        executor_id=body.executor_id,
+        batch_size=body.batch_size,
+        lease_secs=body.lease_secs
+    )
+
     # Validate lease time
-    if body.lease_secs > 600:  # Max 10 minutes
+    if body.lease_secs > 600:
         raise HTTPException(status_code=400, detail="Lease time too long (max 600 seconds)")
-    
-    if body.batch_size > 20:  # Max 20 tasks per claim
+
+    if body.batch_size > 20:
         raise HTTPException(status_code=400, detail="Batch size too large (max 20)")
-    
+
     lease_until = datetime.now(timezone.utc) + timedelta(seconds=body.lease_secs)
-    
-    # Atomic claim
+
+    # 1) Atomic claim
     claimed = db.execute(text("""
         WITH candidates AS (
             SELECT pq.payout_id
@@ -757,7 +853,7 @@ def executor_claim(
                 pq.status = 'PENDING'
                 OR (pq.status = 'IN_PROGRESS' AND pq.lease_until < now())
             )
-            AND p.status = 'RECEIVED'  # Only claim RECEIVED payouts
+            AND p.status = 'RECEIVED'  -- Only claim RECEIVED payouts
             ORDER BY pq.created_at
             FOR UPDATE SKIP LOCKED
             LIMIT :limit
@@ -776,23 +872,25 @@ def executor_claim(
         "worker_id": body.executor_id,
     }).mappings().all()
 
-    payout_ids = [str(r["payout_id"]) for r in claimed]
+    payout_ids = [r["payout_id"] for r in claimed]  # keep UUID type if returned as UUID
 
     if not payout_ids:
         db.commit()
         return {"jobs": [], "message": "No jobs available"}
 
-    # Update payout status
-    db.execute(text("""
+    # 2) Update payout status (use expanding bind for IN (...))
+    upd = text("""
         UPDATE payouts
         SET status = 'PROCESSING',
             updated_at = now()
-        WHERE id = ANY(:ids::uuid[])
+        WHERE id IN :ids
           AND status = 'RECEIVED'
-    """), {"ids": payout_ids})
+    """).bindparams(bindparam("ids", expanding=True))
 
-    # Get job details
-    jobs = db.execute(text("""
+    db.execute(upd, {"ids": payout_ids})
+
+    # 3) Get job details
+    sel = text("""
         SELECT
             p.id,
             p.amount,
@@ -801,21 +899,25 @@ def executor_claim(
             p.provider,
             p.request_payload
         FROM payouts p
-        WHERE p.id = ANY(:ids::uuid[])
+        WHERE p.id IN :ids
         ORDER BY p.created_at
-    """), {"ids": payout_ids}).mappings().all()
-    
+    """).bindparams(bindparam("ids", expanding=True))
+
+    jobs = db.execute(sel, {"ids": payout_ids}).mappings().all()
+
     db.commit()
-    
-    logger.info("Executor claimed jobs",
-               executor_id=body.executor_id,
-               job_count=len(jobs),
-               payout_ids=payout_ids)
-    
+
+    logger.info(
+        "Executor claimed jobs",
+        executor_id=body.executor_id,
+        job_count=len(jobs),
+        payout_ids=[str(x) for x in payout_ids]
+    )
+
     return {
         "jobs": [dict(j) for j in jobs],
         "lease_until": lease_until.isoformat(),
-        "count": len(jobs)
+        "count": len(jobs),
     }
 
 # Keep the rest of your endpoints as they are (executor_report, etc.)
