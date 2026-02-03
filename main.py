@@ -9,7 +9,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text, bindparam
-
+from database import engine
+from models import Base
 import json
 import logging
 import structlog
@@ -55,6 +56,7 @@ app = FastAPI(
     docs_url="/docs" if os.getenv("ENVIRONMENT") != "production" else None,
     redoc_url=None
 )
+Base.metadata.create_all(bind=engine)
 
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -818,6 +820,93 @@ def reset_stuck_tasks(
 #         "lease_until": lease_until.isoformat(),
 #         "count": len(jobs)
 #     }
+@app.post("/internal/executor/report")
+@limiter.limit("60/minute")
+def executor_report(
+    request: Request,
+    body: ExecutorReport,
+    _auth = Depends(require_executor_token),
+    db: Session = Depends(get_db),
+):
+    logger.info(
+        "Executor report received",
+        payout_id=str(body.payout_id),
+        executor_id=body.executor_id,
+    )
+
+    payout = db.query(Payout).filter(Payout.id == body.payout_id).first()
+    if not payout:
+        raise HTTPException(status_code=404, detail="Payout not found")
+
+    # store / upsert evidence
+    db.execute(text("""
+        INSERT INTO payout_evidence (
+            payout_id,
+            executor_id,
+            balance_before,
+            balance_after,
+            ussd_text,
+            provider_ref,
+            captured_at
+        )
+        VALUES (
+            :payout_id,
+            :executor_id,
+            :bb,
+            :ba,
+            :ussd,
+            :ref,
+            now()
+        )
+        ON CONFLICT (payout_id)
+        DO UPDATE SET
+            executor_id = EXCLUDED.executor_id,
+            balance_before = EXCLUDED.balance_before,
+            balance_after = EXCLUDED.balance_after,
+            ussd_text = EXCLUDED.ussd_text,
+            provider_ref = EXCLUDED.provider_ref,
+            captured_at = now()
+    """), {
+        "payout_id": str(body.payout_id),
+        "executor_id": body.executor_id,
+        "bb": body.balance_before,
+        "ba": body.balance_after,
+        "ussd": body.ussd_text,
+        "ref": body.provider_ref,
+    })
+
+    # decide final status
+    status, reason = decide_status(
+        payout.amount,
+        body.balance_before,
+        body.balance_after,
+        body.ussd_text or "",
+    )
+
+    payout.status = status
+    payout.updated_at = datetime.now(timezone.utc)
+
+    # remove from queue when finished
+    if status in ("SENT", "FAILED"):
+        db.execute(
+            text("DELETE FROM payout_queue WHERE payout_id = :id"),
+            {"id": str(body.payout_id)}
+        )
+
+    db.commit()
+
+    logger.info(
+        "Executor report processed",
+        payout_id=str(body.payout_id),
+        final_status=status,
+        reason=reason,
+    )
+
+    return {
+        "ok": True,
+        "status": status,
+        "reason": reason
+    }
 
 @app.post("/internal/executor/claim")
 @limiter.limit("30/minute")
