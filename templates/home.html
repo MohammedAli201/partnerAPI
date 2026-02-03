@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayHub - Secure Payout Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        section {
+            padding: 80px 0;
+        }
+        
+        h1, h2, h3, h4 {
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            color: #1a365d;
+        }
+        
+        h2 {
+            font-size: 2.5rem;
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        h3 {
+            font-size: 1.5rem;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+        
+        p {
+            margin-bottom: 20px;
+            color: #4a5568;
+            font-size: 1.1rem;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background-color: #ed8936;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .btn:hover {
+            background-color: #dd6b20;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(237, 137, 54, 0.2);
+        }
+        
+        .btn-secondary {
+            background-color: #4a5568;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #2d3748;
+        }
+        
+        /* Header */
+        header {
+            padding: 20px 0;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+        }
+        
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a365d;
+            text-decoration: none;
+        }
+        
+        .logo span {
+            color: #ed8936;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            align-items: center;
+        }
+        
+        .nav-links li {
+            margin-left: 30px;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #4a5568;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            color: #ed8936;
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #4a5568;
+            cursor: pointer;
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding-top: 150px;
+            padding-bottom: 100px;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+        }
+        
+        .hero-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .hero-text {
+            flex: 1;
+            padding-right: 50px;
+        }
+        
+        .hero-image {
+            flex: 1;
+        }
+        
+        .hero-image img {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hero h1 {
+            margin-bottom: 20px;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: #4a5568;
+        }
+        
+        /* Features Section */
+        .features {
+            background-color: #fff;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+        }
+        
+        .feature-card {
+            text-align: center;
+            padding: 30px 20px;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            color: #ed8936;
+            margin-bottom: 20px;
+        }
+        
+        /* How It Works */
+        .how-it-works {
+            background-color: #f7fafc;
+        }
+        
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        
+        .step {
+            flex: 1;
+            min-width: 250px;
+            margin: 0 15px 30px;
+            text-align: center;
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 60px;
+            height: 60px;
+            line-height: 60px;
+            background-color: #ed8936;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border-radius: 50%;
+            margin-bottom: 20px;
+        }
+        
+        /* API Documentation */
+        .api-section {
+            background-color: #fff;
+        }
+        
+        .api-endpoints {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .endpoint-card {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ed8936;
+        }
+        
+        .endpoint-method {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-right: 10px;
+        }
+        
+        .method-post {
+            background-color: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .method-get {
+            background-color: #bee3f8;
+            color: #2c5282;
+        }
+        
+        .endpoint-path {
+            font-family: monospace;
+            color: #4a5568;
+            font-size: 1.1rem;
+        }
+        
+        .endpoint-desc {
+            margin-top: 15px;
+            color: #718096;
+        }
+        
+        /* Role Sections */
+        .role-sections {
+            background-color: #f7fafc;
+        }
+        
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .role-card {
+            padding: 40px 30px;
+            border-radius: 10px;
+            text-align: center;
+            background-color: #fff;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .role-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .role-icon {
+            font-size: 3.5rem;
+            color: #ed8936;
+            margin-bottom: 20px;
+        }
+        
+        .role-card h3 {
+            margin-bottom: 15px;
+        }
+        
+        .role-features {
+            list-style: none;
+            text-align: left;
+            margin: 25px 0;
+        }
+        
+        .role-features li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .role-features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #38a169;
+            font-weight: bold;
+        }
+        
+        /* Testimonials */
+        .testimonials {
+            background-color: #fff;
+        }
+        
+        .testimonial-container {
+            display: flex;
+            overflow-x: auto;
+            padding: 20px 0;
+            scrollbar-width: thin;
+        }
+        
+        .testimonial-card {
+            flex: 0 0 auto;
+            width: 350px;
+            margin-right: 30px;
+            padding: 30px;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .testimonial-text {
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+        
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+        }
+        
+        .author-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .author-info h4 {
+            margin-bottom: 5px;
+        }
+        
+        .author-info p {
+            margin-bottom: 0;
+            font-size: 0.9rem;
+            color: #718096;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%);
+            color: white;
+            text-align: center;
+        }
+        
+        .cta-section h2 {
+            color: white;
+        }
+        
+        .cta-section p {
+            color: #e2e8f0;
+            max-width: 700px;
+            margin: 0 auto 30px;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: #1a202c;
+            color: #a0aec0;
+            padding: 60px 0 30px;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .footer-logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 15px;
+        }
+        
+        .footer-links h4 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+        
+        .footer-links ul {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            color: #a0aec0;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: #ed8936;
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid #2d3748;
+            color: #718096;
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            h1 {
+                font-size: 2.8rem;
+            }
+            
+            h2 {
+                font-size: 2.2rem;
+            }
+            
+            .hero-content {
+                flex-direction: column;
+            }
+            
+            .hero-text {
+                padding-right: 0;
+                margin-bottom: 50px;
+                text-align: center;
+            }
+            
+            .steps {
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background-color: white;
+                flex-direction: column;
+                padding: 20px;
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+                z-index: 1001;
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+            
+            .nav-links li {
+                margin: 10px 0;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            h2 {
+                font-size: 1.8rem;
+            }
+            
+            section {
+                padding: 60px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-container">
+            <a href="#" class="logo">Pay<span>Hub</span></a>
+            
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#api">API Docs</a></li>
+                <li><a href="#roles">Roles</a></li>
+                <li><a href="#testimonials">Testimonials</a></li>
+                <li><a href="/login" class="btn">Sign In</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1>Secure Payout Platform for Businesses</h1>
+                    <p>Automate and streamline your payment processes with our robust API-driven platform. Manage payouts, track transactions, and ensure security with role-based access control.</p>
+                    <a href="/login" class="btn">Access Portal</a>
+                    <p style="font-size: 0.9rem; margin-top: 15px;">Admin & Partner dashboards • Secure authentication</p>
+                </div>
+                <div class="hero-image">
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Dashboard showing financial analytics and transaction monitoring">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2>Platform Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Secure Authentication</h3>
+                    <p>Role-based access with secure session management. Separate portals for administrators and partners.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <h3>Queue Management</h3>
+                    <p>Intelligent payout queue with lease locking to prevent duplicate processing and ensure reliability.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h3>Real-time Analytics</h3>
+                    <p>Monitor transaction status, success rates, and performance metrics in real-time dashboards.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>Fast Processing</h3>
+                    <p>Optimized API endpoints with rate limiting for high-volume payout processing without delays.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <h2>How PayHub Works</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Authentication</h3>
+                    <p>Users log in via the secure portal with role-specific access (Admin or Partner).</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>API Integration</h3>
+                    <p>Partners integrate using API keys to submit payout requests programmatically.</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Queue Processing</h3>
+                    <p>Payouts enter an intelligent queue with automatic status tracking and monitoring.</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Monitoring & Reporting</h3>
+                    <p>Both admins and partners monitor transactions through dedicated dashboards.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- API Documentation -->
+    <section id="api" class="api-section">
+        <div class="container">
+            <h2>API Documentation</h2>
+            <div class="api-endpoints">
+                <div class="endpoint-card">
+                    <div>
+                        <span class="endpoint-method method-post">POST</span>
+                        <span class="endpoint-path">/payouts-create</span>
+                    </div>
+                    <p class="endpoint-desc">Create a new payout. Requires X-API-Key header for authentication.</p>
+                </div>
+                
+                <div class="endpoint-card">
+                    <div>
+                        <span class="endpoint-method method-get">GET</span>
+                        <span class="endpoint-path">/payouts/{payout_id}</span>
+                    </div>
+                    <p class="endpoint-desc">Retrieve payout details by ID. Requires X-API-Key header.</p>
+                </div>
+                
+                <div class="endpoint-card">
+                    <div>
+                        <span class="endpoint-method method-get">GET</span>
+                        <span class="endpoint-path">/stats/summary</span>
+                    </div>
+                    <p class="endpoint-desc">Get partner statistics including payout counts and daily amounts.</p>
+                </div>
+                
+                <div class="endpoint-card">
+                    <div>
+                        <span class="endpoint-method method-post">POST</span>
+                        <span class="endpoint-path">/internal/executor/claim</span>
+                    </div>
+                    <p class="endpoint-desc">Executor endpoint to claim payout tasks for processing.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Role Sections -->
+    <section id="roles" class="role-sections">
+        <div class="container">
+            <h2>Platform Roles</h2>
+            <div class="roles-grid">
+                <div class="role-card">
+                    <div class="role-icon">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <h3>Administrator</h3>
+                    <p>Full system access for managing partners, monitoring all transactions, and system configuration.</p>
+                    
+                    <ul class="role-features">
+                        <li>Monitor all payout transactions</li>
+                        <li>View system health and queue status</li>
+                        <li>Reset stuck tasks and manage queue</li>
+                        <li>Create and manage partner accounts</li>
+                        <li>Access comprehensive analytics</li>
+                    </ul>
+                    
+                    <a href="/login" class="btn btn-secondary">Admin Portal</a>
+                </div>
+                
+                <div class="role-card">
+                    <div class="role-icon">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <h3>Partner</h3>
+                    <p>Businesses that integrate with our API to send payouts to their customers or beneficiaries.</p>
+                    
+                    <ul class="role-features">
+                        <li>API key authentication</li>
+                        <li>Submit payout requests via API</li>
+                        <li>Track your payout status</li>
+                        <li>View transaction history</li>
+                        <li>Access partner-specific analytics</li>
+                    </ul>
+                    
+                    <a href="/login" class="btn btn-secondary">Partner Portal</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section id="testimonials" class="testimonials">
+        <div class="container">
+            <h2>Trusted by Businesses</h2>
+            <div class="testimonial-container">
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"PayHub's dashboard gives us complete visibility into all transactions. The admin interface is intuitive and powerful."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">SD</div>
+                        <div class="author-info">
+                            <h4>Sarah Dawson</h4>
+                            <p>Operations Director, PayGlobal</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"The API integration was seamless. We reduced payout processing time by 70% and eliminated manual errors."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">MF</div>
+                        <div class="author-info">
+                            <h4>Marcus Finch</h4>
+                            <p>CTO, FinTech Solutions</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"As a partner, the dashboard shows exactly what we need. Transaction tracking and reporting are excellent."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">TJ</div>
+                        <div class="author-info">
+                            <h4>Thomas Jacobs</h4>
+                            <p>CEO, MerchantPay</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"Security was our top concern. PayHub's role-based access and session management give us confidence."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">ER</div>
+                        <div class="author-info">
+                            <h4>Elena Rodriguez</h4>
+                            <p>Security Lead, BankSecure</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section id="cta" class="cta-section">
+        <div class="container">
+            <h2>Ready to Streamline Your Payouts?</h2>
+            <p>Join businesses using PayHub to automate payment processes, reduce errors, and improve transaction visibility.</p>
+            <a href="/login" class="btn">Access Your Portal</a>
+            <p style="margin-top: 20px; font-size: 0.9rem;">Admin & Partner dashboards • Secure authentication • Real-time monitoring</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-about">
+                    <div class="footer-logo">Pay<span style="color: #ed8936">Hub</span></div>
+                    <p>Secure, API-driven payout platform for businesses. Streamline payments with robust automation and role-based access control.</p>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#how-it-works">How It Works</a></li>
+                        <li><a href="#api">API Docs</a></li>
+                        <li><a href="#roles">Roles</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Access</h4>
+                    <ul>
+                        <li><a href="/login">Login Portal</a></li>
+                        <li><a href="/admin">Admin Dashboard</a></li>
+                        <li><a href="/partner">Partner Dashboard</a></li>
+                        <li><a href="/health">System Health</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li>API Support: 24/7</li>
+                        <li>Business Hours: 9AM-5PM EST</li>
+                        <li><a href="mailto:support@payhub.com">support@payhub.com</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>&copy; 2023 PayHub. All rights reserved. | <a href="#" style="color: #a0aec0;">Privacy Policy</a> | <a href="#" style="color: #a0aec0;">Terms of Service</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // DOM Elements
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const navLinks = document.getElementById('navLinks');
+        
+        // Mobile menu toggle
+        mobileMenuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            
+            // Change icon based on menu state
+            const icon = mobileMenuBtn.querySelector('i');
+            if (navLinks.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        });
+        
+        // Close mobile menu when clicking a link
+        const navItems = document.querySelectorAll('.nav-links a');
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                mobileMenuBtn.querySelector('i').classList.remove('fa-times');
+                mobileMenuBtn.querySelector('i').classList.add('fa-bars');
+            });
+        });
+        
+        // Testimonial carousel auto-scroll
+        let testimonialIndex = 0;
+        const testimonialContainer = document.querySelector('.testimonial-container');
+        
+        function scrollTestimonials() {
+            if (!testimonialContainer || testimonialContainer.children.length === 0) return;
+            
+            testimonialIndex++;
+            if (testimonialIndex >= testimonialContainer.children.length) {
+                testimonialIndex = 0;
+            }
+            
+            const cardWidth = testimonialContainer.children[0].offsetWidth + 30; // 30px margin
+            testimonialContainer.scrollTo({
+                left: cardWidth * testimonialIndex,
+                behavior: 'smooth'
+            });
+        }
+        
+        // Auto-scroll testimonials every 5 seconds
+        if (testimonialContainer) {
+            setInterval(scrollTestimonials, 5000);
+        }
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('PayHub Landing Page Loaded');
+            console.log('Access your portals at:');
+            console.log('- Login: /login');
+            console.log('- Admin Dashboard: /admin');
+            console.log('- Partner Dashboard: /partner');
+        });
+    </script>
+</body>
+</html>
