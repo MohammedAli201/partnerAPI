@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Partner Dashboard</title>
+  <link rel="stylesheet" href="/static/partner.css">
+  <link rel="icon" href="/static/favicon.ico">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Partner Dashboard</div>
+    <div class="actions">
+      <a class="btn ghost" href="/logout">Logout</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="cards">
+      <div class="card">
+        <div class="card-title">Received</div>
+        <div class="card-value" id="c-received">—</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Processing</div>
+        <div class="card-value" id="c-processing">—</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Sent</div>
+        <div class="card-value" id="c-sent">—</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Failed</div>
+        <div class="card-value" id="c-failed">—</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Payouts</h2>
+
+        <div class="filters">
+          <input id="q" class="input" placeholder="Search recipient or tx id">
+          <select id="status" class="input">
+            <option value="">All</option>
+            <option value="RECEIVED">RECEIVED</option>
+            <option value="PROCESSING">PROCESSING</option>
+            <option value="SENT">SENT</option>
+            <option value="FAILED">FAILED</option>
+          </select>
+          <button id="btn-refresh" class="btn">Refresh</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="table" id="tbl">
+          <thead>
+            <tr>
+              <th>Created</th>
+              <th>Tx ID</th>
+              <th>Recipient</th>
+              <th>Amount</th>
+              <th>Provider</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="rows">
+            <tr><td colspan="6" class="muted">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pager">
+        <button id="prev" class="btn ghost">Prev</button>
+        <div class="muted" id="page">—</div>
+        <button id="next" class="btn ghost">Next</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/partner.js"></script>
+</body>
+</html>

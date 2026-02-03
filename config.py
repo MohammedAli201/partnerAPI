@@ -4,6 +4,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
 class Settings(BaseSettings):
+    # ✅ UI login session settings
+    secret_key: str = Field(alias="SECRET_KEY")
+    cookie_secure: bool = Field(default=False, alias="COOKIE_SECURE")
+
     # read .env locally, but in Fly it will read from real environment variables
     model_config = SettingsConfigDict(env_file=".env", extra="forbid")
 
