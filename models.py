@@ -14,6 +14,18 @@ from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
 
+# class Partner(Base):
+#     __tablename__ = "partners"
+
+#     id = Column(Integer, primary_key=True)
+#     name = Column(String, nullable=False)
+
+#     api_key_prefix = Column(String(8), nullable=False, index=True)
+#     api_key_hash = Column(String(200), nullable=False)
+
+#     is_active = Column(Boolean, default=True, nullable=False)
+
+#     created_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
 class Partner(Base):
     __tablename__ = "partners"
 
@@ -25,7 +37,26 @@ class Partner(Base):
 
     is_active = Column(Boolean, default=True, nullable=False)
 
+    # optional cached balances (recommended)
+    balance_available = Column(Numeric(18, 2), nullable=False, default=0)
+    balance_reserved = Column(Numeric(18, 2), nullable=False, default=0)
+
     created_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+class PayoutReservation(Base):
+    __tablename__ = "payout_reservations"
+
+    payout_id = Column(UUID(as_uuid=True), ForeignKey("payouts.id", ondelete="CASCADE"), primary_key=True)
+    partner_id = Column(Integer, ForeignKey("partners.id", ondelete="RESTRICT"), nullable=False, index=True)
+
+    amount = Column(Numeric(18, 2), nullable=False)  # principal
+    fee = Column(Numeric(18, 2), nullable=False)
+    total = Column(Numeric(18, 2), nullable=False)
+
+    status = Column(String, nullable=False, default="ACTIVE")  # ACTIVE, RELEASED, CAPTURED
+    created_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+
+    partner = relationship("Partner")
+    payout = relationship("Payout")
 
 class Payout(Base):
     __tablename__ = "payouts"
@@ -85,6 +116,24 @@ class PartnerSignup(BaseModel):
     password: str
 class User(Base):
     __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    # login
+    username = Column(String, unique=True, index=True, nullable=False)
+    password_hash = Column(String, nullable=False)
+
+    # authorization
+    role = Column(String, nullable=False)  # "admin" | "partner"
+    is_active = Column(Boolean, default=True, nullable=False)
+
+    # partner info (only when role="partner")
+    partner_name = Column(String, nullable=True)
+    partner_code = Column(String, unique=True, nullable=True)
+
+    partner_id = Column(Integer, ForeignKey("partners.id", ondelete="RESTRICT"), nullable=True)
+    partner = relationship("Partner")
+
 
     id = Column(Integer, primary_key=True, index=True)
 
