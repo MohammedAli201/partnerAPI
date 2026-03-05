@@ -841,6 +841,7 @@
 # main.py — PRODUCTION READY (with Partner Prepaid Balance + Reserve/Capture/Release)
 import os
 import json
+import re
 import logging
 import structlog
 from datetime import datetime, timezone, timedelta
@@ -900,6 +901,20 @@ settings = get_settings()
 # Fee charged to partner per payout (fixed)
 # Put this in config/settings, e.g. PARTNER_FEE=0.60
 PARTNER_FEE = Decimal(str(getattr(settings, "partner_fee", "0.60")))
+
+UUID_V4_RE = re.compile(
+    r"^[0-9a-fA-F]{8}-"
+    r"[0-9a-fA-F]{4}-"
+    r"[0-9a-fA-F]{4}-"
+    r"[0-9a-fA-F]{4}-"
+    r"[0-9a-fA-F]{12}$"
+)
+PARTNER_TX_FULL_RE = re.compile(
+    r"^pm_(?P<date>\d{6})-(?P<code>[A-Za-z0-9]{3,32})_(?P<tx_uuid>[0-9a-fA-F-]{36})$"
+)
+PARTNER_TX_LEGACY_RE = re.compile(
+    r"^pm_(?P<date>\d{6})-(?P<code>[A-Za-z0-9]{3,32})_(?P<tx_short>[0-9a-fA-F]{8})$"
+)
 
 
 # -------------------------
@@ -969,6 +984,83 @@ def get_partner_from_api_key(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key")
 
     return partner
+
+
+def extract_payload_transaction_id(payload: Dict[str, Any]) -> str | None:
+    if not isinstance(payload, dict):
+        return None
+
+    def pick_uuid(value: Any) -> str | None:
+        if isinstance(value, str):
+            candidate = value.strip()
+            if UUID_V4_RE.fullmatch(candidate):
+                return candidate.lower()
+        return None
+
+    # 1) direct keys on root payload
+    for key in ("TransactionId", "transactionId", "transaction_id"):
+        tx = pick_uuid(payload.get(key))
+        if tx:
+            return tx
+
+    # 2) common nested object, e.g. {"data": {"TransactionId": "..."}}
+    nested_data = payload.get("data")
+    if isinstance(nested_data, dict):
+        for key in ("TransactionId", "transactionId", "transaction_id"):
+            tx = pick_uuid(nested_data.get(key))
+            if tx:
+                return tx
+
+    # 3) shallow scan one level for any transaction id key
+    for _, value in payload.items():
+        if isinstance(value, dict):
+            for key in ("TransactionId", "transactionId", "transaction_id"):
+                tx = pick_uuid(value.get(key))
+                if tx:
+                    return tx
+    return None
+
+
+def normalize_partner_tx_id(raw_partner_tx_id: str, request_payload: Dict[str, Any]) -> str:
+    partner_tx_id = (raw_partner_tx_id or "").strip()
+    if not partner_tx_id:
+        raise HTTPException(status_code=400, detail="partner_tx_id is required")
+
+    payload_tx_id = extract_payload_transaction_id(request_payload)
+
+    m_full = PARTNER_TX_FULL_RE.fullmatch(partner_tx_id)
+    if m_full:
+        tx_uuid = m_full.group("tx_uuid").lower()
+        if not UUID_V4_RE.fullmatch(tx_uuid):
+            raise HTTPException(status_code=400, detail="partner_tx_id must include a full GUID")
+        if payload_tx_id and payload_tx_id != tx_uuid:
+            raise HTTPException(status_code=400, detail="partner_tx_id and request_payload.TransactionId do not match")
+        return f"pm_{m_full.group('date')}-{m_full.group('code')}_{tx_uuid}"
+
+    m_legacy = PARTNER_TX_LEGACY_RE.fullmatch(partner_tx_id)
+    if m_legacy:
+        if not payload_tx_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Legacy truncated partner_tx_id detected. Send full request_payload.TransactionId to upgrade.",
+            )
+        tx_short = m_legacy.group("tx_short").lower()
+        if not payload_tx_id.startswith(tx_short):
+            raise HTTPException(status_code=400, detail="Legacy partner_tx_id does not match request_payload.TransactionId")
+        return f"pm_{m_legacy.group('date')}-{m_legacy.group('code')}_{payload_tx_id}"
+
+    if UUID_V4_RE.fullmatch(partner_tx_id):
+        full_tx_id = partner_tx_id.lower()
+        if payload_tx_id and payload_tx_id != full_tx_id:
+            raise HTTPException(status_code=400, detail="partner_tx_id and request_payload.TransactionId do not match")
+        date_code = datetime.now(timezone.utc).strftime("%y%m%d")
+        partner_code = full_tx_id.replace("-", "")[:6].upper()
+        return f"pm_{date_code}-{partner_code}_{full_tx_id}"
+
+    raise HTTPException(
+        status_code=400,
+        detail="partner_tx_id must be pm_[DATE]-[CODE]_[FULL_GUID] or a full GUID.",
+    )
 
 
 # -------------------------
@@ -1051,12 +1143,14 @@ def create_payout(
     partner: Partner = Depends(get_partner_from_api_key),
     db: Session = Depends(get_db),
 ):
+    normalized_partner_tx_id = normalize_partner_tx_id(payload.partner_tx_id, payload.request_payload)
+
     # -------------------------
     # Idempotency (must have)
     # -------------------------
     existing = db.query(Payout).filter(
         Payout.partner_id == partner.id,
-        Payout.partner_tx_id == payload.partner_tx_id
+        Payout.partner_tx_id == normalized_partner_tx_id
     ).first()
 
     if existing:
@@ -1124,7 +1218,7 @@ def create_payout(
         # Create payout
         payout = Payout(
             partner_id=partner.id,
-            partner_tx_id=payload.partner_tx_id,
+            partner_tx_id=normalized_partner_tx_id,
             amount=payload.amount,
             currency=payload.currency,
             recipient=payload.recipient,
@@ -1185,6 +1279,7 @@ def create_payout(
 
     return {
         "id": str(payout.id),
+        "partner_tx_id": normalized_partner_tx_id,
         "status": payout.status,
         "created_at": payout.created_at,
         "duplicate": False,
