@@ -15,3 +15,6 @@ tenacity
 requests
 firebase-admin
 jinja2
+bcrypt
+itsdangerous
+python-multipart
