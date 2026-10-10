@@ -1,0 +1,166 @@
+{
+  "measured_at": "2026-10-09",
+  "hardware": {
+    "os": "Windows-10-10.0.19045-SP0",
+    "logical_cpus": 4,
+    "host_memory_mb": 16239
+  },
+  "application": {
+    "workers": 2,
+    "pool_per_worker": 8,
+    "overflow_per_worker": 4,
+    "python": "3.12.3"
+  },
+  "database": {
+    "server_version": "18.1",
+    "shared_buffers": "128MB",
+    "max_connections": "100"
+  },
+  "dataset": {
+    "partners": 10,
+    "legacy_pbkdf2_partners": 4,
+    "synthetic_wallets": 1,
+    "opening_evidence": "Synthetic only; no actual funds"
+  },
+  "authentication": {
+    "HMAC_256bit_key": {
+      "verification_ms": 0.025,
+      "samples": 100
+    },
+    "PBKDF2_120000": {
+      "verification_ms": 140.409,
+      "samples": 100
+    }
+  },
+  "scenarios": [
+    {
+      "arrival_rate": 10,
+      "arrival_seconds": 20,
+      "single_partner": false,
+      "duration_seconds": 20.137,
+      "submission_completions_per_second": 9.93,
+      "statuses": {
+        "submit:201": 200,
+        "duplicate:201": 20,
+        "poll:200": 200,
+        "invalid_auth:401": 20
+      },
+      "latency_ms": {
+        "submit": {
+          "50": 54.23,
+          "95": 402.19,
+          "99": 452.76
+        },
+        "duplicate": {
+          "50": 23.77,
+          "95": 34.21,
+          "99": 34.21
+        },
+        "poll": {
+          "50": 28.15,
+          "95": 366.8,
+          "99": 392.72
+        },
+        "invalid_auth": {
+          "50": 14.3,
+          "95": 20.63,
+          "99": 20.63
+        }
+      }
+    },
+    {
+      "arrival_rate": 100,
+      "arrival_seconds": 10,
+      "single_partner": false,
+      "duration_seconds": 127.955,
+      "submission_completions_per_second": 7.82,
+      "statuses": {
+        "submit:201": 999,
+        "duplicate:201": 100,
+        "poll:200": 997,
+        "invalid_auth:401": 100,
+        "poll:transport_error": 2,
+        "submit:transport_error": 1
+      },
+      "latency_ms": {
+        "submit": {
+          "50": 6141.28,
+          "95": 23458.97,
+          "99": 36121.87
+        },
+        "duplicate": {
+          "50": 7795.8,
+          "95": 21509.19,
+          "99": 32401.75
+        },
+        "poll": {
+          "50": 6037.86,
+          "95": 25335.94,
+          "99": 34474.43
+        },
+        "invalid_auth": {
+          "50": 5144.15,
+          "95": 22876.18,
+          "99": 35365.15
+        }
+      }
+    },
+    {
+      "arrival_rate": 100,
+      "arrival_seconds": 5,
+      "single_partner": true,
+      "duration_seconds": 34.576,
+      "submission_completions_per_second": 14.46,
+      "statuses": {
+        "submit:201": 475,
+        "poll:200": 475,
+        "duplicate:201": 49,
+        "invalid_auth:401": 50,
+        "submit:429": 10,
+        "submit:402": 15
+      },
+      "latency_ms": {
+        "submit": {
+          "50": 2787.89,
+          "95": 12318.7,
+          "99": 18557.35
+        },
+        "poll": {
+          "50": 2456.73,
+          "95": 12174.95,
+          "99": 16928.95
+        },
+        "duplicate": {
+          "50": 3959.02,
+          "95": 14207.42,
+          "99": 15587.65
+        },
+        "invalid_auth": {
+          "50": 1602.59,
+          "95": 7596.11,
+          "99": 14638.18
+        }
+      }
+    }
+  ],
+  "callback_faults": {
+    "attempts": 59,
+    "unavailable": 30,
+    "slow_202": 29
+  },
+  "resources": {
+    "samples": 351,
+    "peak_rss_mb": 225.36,
+    "peak_process_cpu_percent": 332.5,
+    "max_lock_wait_connections": 4
+  },
+  "limitations": [
+    "Local host and PostgreSQL; not Fly hardware",
+    "20-second steady, 10-second burst, 5-second single-partner; no soak test",
+    "Callback transport faults injected; no external network latency measured",
+    "No physical USSD throughput measured; no production capacity claim",
+    "Client capped at 160 in-flight jobs; scheduled requests can queue before HTTP timing starts",
+    "First partner started with only 1000 synthetic funding; the heavy-partner scenario includes 15 legitimate 402 funding rejections",
+    "CPU/RSS sample aggregates HTTP parent/children, not PostgreSQL, callback process or load generator"
+  ]
+}

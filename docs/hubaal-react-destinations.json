@@ -1,0 +1,67 @@
+[
+  {
+    "route": "/",
+    "public_links": 38,
+    "passed": true
+  },
+  {
+    "route": "/receive",
+    "public_links": 31,
+    "passed": true
+  },
+  {
+    "route": "/partners",
+    "public_links": 32,
+    "passed": true
+  },
+  {
+    "route": "/about",
+    "public_links": 29,
+    "passed": true
+  },
+  {
+    "route": "/help",
+    "public_links": 30,
+    "passed": true
+  },
+  {
+    "route": "/contact",
+    "public_links": 31,
+    "passed": true
+  },
+  {
+    "route": "/track",
+    "public_links": 30,
+    "passed": true
+  },
+  {
+    "route": "/privacy",
+    "public_links": 30,
+    "passed": true
+  },
+  {
+    "route": "/terms",
+    "public_links": 30,
+    "passed": true
+  },
+  {
+    "route": "/complaints",
+    "public_links": 30,
+    "passed": true
+  },
+  {
+    "route": "/partners/integration",
+    "public_links": 31,
+    "passed": true
+  },
+  {
+    "route": "/?lang=so",
+    "public_links": 38,
+    "passed": true
+  },
+  {
+    "route": "/partners?lang=so",
+    "public_links": 32,
+    "passed": true
+  }
+]

@@ -17,6 +17,7 @@ function getBootstrap() {
 document.addEventListener('DOMContentLoaded', function () {
     loadPartners();
     loadPartnerDropdowns();
+    ['earningsPeriod','earningsCurrency','earningsActivity'].forEach(id => document.getElementById(id).addEventListener('change', loadPartners));
 
     // Event listeners
     document.getElementById('searchPartner').addEventListener('input', debounce(loadPartners, 300));
@@ -53,8 +54,10 @@ async function loadPartners() {
         const status = document.getElementById('filterActive').value;
         const sort = document.getElementById('sortBy').value;
 
-        const response = await fetch(`/admin/api/funds/partners?page=${currentPage}&limit=${pageSize}&search=${encodeURIComponent(search)}&status=${status}&sort=${sort}`);
+        const feeFilters = new URLSearchParams({earnings_period:document.getElementById('earningsPeriod').value,earnings_currency:document.getElementById('earningsCurrency').value,earnings_activity:document.getElementById('earningsActivity').value});
+        const response = await fetch(`/admin/api/funds/partners?page=${currentPage}&limit=${pageSize}&search=${encodeURIComponent(search)}&status=${status}&sort=${sort}&${feeFilters}`);
         const data = await response.json();
+        if(data.earnings_period) document.getElementById('earningsScope').textContent = `${data.earnings_period.start_date} through ${data.earnings_period.end_date} · ${data.earnings_period.timezone}. Net fee revenue is separate from partner funds.`;
 
         if (!response.ok) throw new Error(data.detail || 'Failed to load partners');
 
@@ -126,18 +129,19 @@ function renderPartnersTable(partners) {
             <td class="fw-bold text-primary">
                 $${(parseFloat(partner.balance_available) + parseFloat(partner.balance_reserved)).toFixed(2)}
             </td>
+            <td class="text-end"><strong>${escapeHtml(partner.earned_fees || '0.00')} ${escapeHtml(partner.earnings_currency || 'USD')}</strong><br><a href="/admin/earnings?${new URLSearchParams({partner_id:partner.id,preset:document.getElementById('earningsPeriod').value,currency:document.getElementById('earningsCurrency').value,activity:document.getElementById('earningsActivity').value})}">View earnings</a></td>
             <td class="text-muted small">${lastUpdated}</td>
             <td>
                 <div class="btn-group btn-group-sm">
-                    <button class="btn btn-outline-primary" onclick="showAddFundsModal(${partner.id})" 
+                    <button class="btn btn-outline-primary" onclick="showAddFundsModal(${partner.id})"
                             title="Add Funds">
                         <i class="fas fa-plus"></i>
                     </button>
-                    <button class="btn btn-outline-warning" onclick="showAdjustModal(${partner.id})" 
+                    <button class="btn btn-outline-warning" onclick="showAdjustModal(${partner.id})"
                             title="Adjust Balance">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-outline-info" onclick="showHistory(${partner.id}, '${escapeHtml(partner.name)}')" 
+                    <button class="btn btn-outline-info" onclick="showHistory(${partner.id}, '${escapeHtml(partner.name)}')"
                             title="View History">
                         <i class="fas fa-history"></i>
                     </button>
@@ -185,8 +189,8 @@ function changePage(page) {
 //     const amount = document.getElementById('addFundsAmount').value;
 //     const reference = document.getElementById('addFundsReference').value;
 
-//     if (!partnerId || !amount) {
-//         showAlert('warning', 'Please select a partner and enter an amount');
+//     if (!partnerId || !amount || !reference.trim()) {
+//         showAlert('warning', 'Please select a partner, enter an amount and a unique funding reference');
 //         return;
 //     }
 
@@ -197,7 +201,7 @@ function changePage(page) {
 //                 'Content-Type': 'application/json',
 //             },
 //             body: JSON.stringify({
-//                 amount: parseFloat(amount),
+//                 amount: amount,
 //                 reference: reference || null,
 //                 note: `Admin deposit via UI`
 //             })
@@ -226,8 +230,8 @@ async function addFunds() {
     const amount = document.getElementById('addFundsAmount').value;
     const reference = document.getElementById('addFundsReference').value;
 
-    if (!partnerId || !amount) {
-        showAlert('warning', 'Please select a partner and enter an amount');
+    if (!partnerId || !amount || !reference.trim()) {
+        showAlert('warning', 'Please select a partner, enter an amount and a unique funding reference');
         return;
     }
 
@@ -238,7 +242,7 @@ async function addFunds() {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                amount: parseFloat(amount),
+                amount: amount,
                 reference: reference || null,
                 note: `Admin deposit via UI`
             })
@@ -275,7 +279,7 @@ async function adjustFunds() {
     const partnerId = document.getElementById('adjustFundsPartner').value;
     const amount = document.getElementById('adjustFundsAmount').value;
     const adjustmentType = document.getElementById('adjustmentType').value;
-    const balanceType = document.getElementById('balanceType').value;
+
     const reason = document.getElementById('adjustFundsReason').value;
 
     if (!partnerId || !amount || !reason) {
@@ -284,17 +288,20 @@ async function adjustFunds() {
     }
 
     try {
-        const response = await fetch(`/admin/api/funds/adjust`, {
+        if (!/^\d+(\.\d{1,2})?$/.test(amount)) throw new Error('Use an exact amount with at most two decimals');
+        const parts = amount.split('.');
+        const cents = BigInt(parts[0]) * 100n + BigInt((parts[1] || '').padEnd(2, '0'));
+        if (cents <= 0n || cents > 1000000000000n) throw new Error('Correction amount out of range');
+        const response = await fetch(`/admin/api/funds/corrections/propose`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 partner_id: parseInt(partnerId),
-                amount: parseFloat(amount),
-                adjustment_type: adjustmentType,
-                balance_type: balanceType,
-                reason: reason
+                delta_minor: Number(adjustmentType === 'subtract' ? -cents : cents),
+                business_reference: crypto.randomUUID(),
+                evidence_ref: reason
             })
         });
 
@@ -302,7 +309,7 @@ async function adjustFunds() {
 
         if (!response.ok) throw new Error(data.detail || 'Failed to adjust balance');
 
-        showAlert('success', data.message || 'Balance adjusted successfully');
+        showAlert('success', `Correction ${data.review_id} proposed. A different administrator must review and approve it; the balance is unchanged.`);
 
         // Reset form and close modal
         document.getElementById('adjustFundsForm').reset();

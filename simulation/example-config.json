@@ -1,0 +1,6 @@
+{
+  "atlas": {"period_seconds": 120, "jitter_seconds": 0.4},
+  "britannia": {"period_seconds": 120, "jitter_seconds": 0.5, "failure_buckets": 3},
+  "liberty": {"period_seconds": 120, "jitter_seconds": 0.6, "failure_buckets": 3, "lost_response_bucket": 3},
+  "nordic": {"period_seconds": 120, "jitter_seconds": 0.5, "ack_delay_seconds": 0.02}
+}

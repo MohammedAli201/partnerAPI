@@ -1,0 +1,19 @@
+/* Hubaal — styles live in index.css */
+
+/* Keep navigation below the header on short mobile screens. */
+@media (max-height: 600px) {
+  [data-testid="mobile-menu-panel"] {
+    justify-content: flex-start;
+    padding-top: 96px;
+    padding-bottom: 24px;
+    overflow-y: auto;
+  }
+}
+
+/* Keep every service label readable when motion is disabled. */
+@media (prefers-reduced-motion: reduce) {
+  .stats-marquee-track { width: 100%; }
+  .stats-marquee-set[aria-hidden="true"] { display: none; }
+  .stats-marquee-set[aria-hidden="false"] { flex-wrap: wrap; justify-content: center; gap: 12px 0; width: 100%; }
+  .stats-marquee-item { padding: 4px 16px; }
+}

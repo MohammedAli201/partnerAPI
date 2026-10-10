@@ -10,12 +10,15 @@
 
   <!-- ✅ Font Awesome (optional, only for icons) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="/static/csrf.js" defer></script>
 </head>
 <body>
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1><i class="fas fa-money-bill-wave me-2"></i>Partner Funds Management</h1>
         <div>
+            <a href="/admin/earnings" class="btn btn-outline-primary">View earnings</a>
+            <a href="/admin" class="btn btn-outline-secondary">Transactions</a>
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addFundsModal">
                 <i class="fas fa-plus me-1"></i> Add Funds
             </button>
@@ -59,6 +62,12 @@
     </div>
 
     <!-- Partners Table -->
+    <div class="d-flex gap-3 align-items-center mb-3 flex-wrap">
+      <label>Earned fees period <select id="earningsPeriod" class="form-select"><option value="today">Today</option><option value="7days">Last 7 days</option><option value="month" selected>This month</option></select></label>
+      <label>Fee currency <select id="earningsCurrency" class="form-select"><option>USD</option><option>EUR</option><option>GBP</option></select></label>
+      <label>Fee activity <select id="earningsActivity" class="form-select"><option value="live">Live</option><option value="simulation">Simulation / test</option><option value="unclassified">Unclassified historical</option></select></label>
+      <span id="earningsScope" class="text-muted small"></span>
+    </div>
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
@@ -71,6 +80,7 @@
                             <th>Available Balance</th>
                             <th>Reserved Balance</th>
                             <th>Total Balance</th>
+                            <th>Earned fees</th>
                             <th>Last Updated</th>
                             <th>Actions</th>
                         </tr>
@@ -110,14 +120,14 @@
                         <label class="form-label">Amount</label>
                         <div class="input-group">
                             <span class="input-group-text">$</span>
-                            <input type="number" class="form-control" id="addFundsAmount" 
+                            <input type="number" class="form-control" id="addFundsAmount"
                                    step="0.01" min="0.01" max="100000" required>
                         </div>
                         <div class="form-text">Enter amount to add to available balance</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Reference/Note</label>
-                        <input type="text" class="form-control" id="addFundsReference" 
+                        <input type="text" class="form-control" id="addFundsReference"
                                placeholder="e.g., Bank transfer #12345">
                     </div>
                     <div class="alert alert-info">
@@ -141,7 +151,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Adjust Partner Balance</h5>
+                <h5 class="modal-title">Propose Balance Correction</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -157,28 +167,20 @@
                         <select class="form-select" id="adjustmentType" required>
                             <option value="add">Add to Balance</option>
                             <option value="subtract">Subtract from Balance</option>
-                            <option value="set">Set Exact Balance</option>
+
                         </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Amount</label>
                         <div class="input-group">
                             <span class="input-group-text">$</span>
-                            <input type="number" class="form-control" id="adjustFundsAmount" 
+                            <input type="number" class="form-control" id="adjustFundsAmount"
                                    step="0.01" min="0.01" required>
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Affect Which Balance?</label>
-                        <select class="form-select" id="balanceType" required>
-                            <option value="available">Available Balance</option>
-                            <option value="reserved">Reserved Balance</option>
-                            <option value="both">Both (Total)</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Reason/Note</label>
-                        <textarea class="form-control" id="adjustFundsReason" rows="2" 
+                        <label class="form-label">Evidence reference and reason</label>
+                        <textarea class="form-control" id="adjustFundsReason" rows="2"
                                   placeholder="Explain why this adjustment is needed..." required></textarea>
                     </div>
                 </form>
@@ -186,7 +188,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-warning" id="submitAdjustFunds">
-                    <i class="fas fa-edit me-1"></i> Apply Adjustment
+                    <i class="fas fa-edit me-1"></i> Propose Correction
                 </button>
             </div>
         </div>

@@ -1,125 +1,230 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Admin Dashboard</title>
-  <link rel="stylesheet" href="/static/admin.css" />
-  <link rel="icon" href="/static/favicon.ico">
-
+  <title>Hubaal · Payout operations</title>
+  <link rel="stylesheet" href="/static/hubaal/fonts/hubaal-fonts.css" />
+  <link rel="stylesheet" href="/static/admin_dashboard.css?v=20261010-1" />
 </head>
 <body>
-  <div class="wrap">
-    <header class="top">
-      <div>
-        <h1>Admin Dashboard</h1>
-        <p class="muted">Transactions + Queue monitor</p>
-      </div>
-
-      <div class="tokenBox">
-        <input id="token" type="password" placeholder="Paste X-Executor-Token…" />
-        <button id="saveToken">Save</button>
-        <button id="clearToken" class="ghost">Clear</button>
-      </div>
-    </header>
-
-    <section class="cards" id="summary">
-      <div class="card"><div class="k">RECEIVED</div><div class="v" id="s_received">-</div></div>
-      <div class="card"><div class="k">PROCESSING</div><div class="v" id="s_processing">-</div></div>
-      <div class="card"><div class="k">SENT</div><div class="v" id="s_sent">-</div></div>
-      <div class="card"><div class="k">FAILED</div><div class="v" id="s_failed">-</div></div>
-      <div class="card"><div class="k">QUEUE PENDING</div><div class="v" id="q_pending">-</div></div>
-      <div class="card"><div class="k">IN PROGRESS</div><div class="v" id="q_inprogress">-</div></div>
-      <div class="card"><div class="k">EXPIRED LEASE</div><div class="v" id="q_expired">-</div></div>
-    </section>
-
-    <section class="panel">
-      <div class="panelHead">
-        <h2>Transactions</h2>
-        <div class="filters">
-          <input id="search" placeholder="Search recipient / partner_tx_id / provider_ref" />
-          <select id="status">
-            <option value="">All statuses</option>
-            <option>RECEIVED</option>
-            <option>PROCESSING</option>
-            <option>SENT</option>
-            <option>FAILED</option>
-          </select>
-          <button id="refresh">Refresh</button>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="app">
+    <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
+      <div class="brand">
+        <span class="brandMark" aria-hidden="true">H</span>
+        <div>
+          <div class="brandName">Hubaal</div>
+          <div class="brandSub">Payout operations</div>
         </div>
       </div>
-
-      <div class="tableWrap">
-        <table id="payouts">
-          <thead>
-            <tr>
-              <th>Created</th>
-              <th>Recipient</th>
-              <th>Amount</th>
-              <th>Status</th>
-              <th>Queue</th>
-              <th>Worker</th>
-              <th>Partner Tx</th>
-              <th>ID</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+      <nav aria-label="Sections">
+        <div class="navLabel" id="navOps">Operations</div>
+        <ul class="nav" aria-labelledby="navOps">
+          <li><a href="#/overview" data-view="overview" data-icon="overview" data-testid="nav-overview">Overview</a></li>
+          <li><a href="#/transactions" data-view="transactions" data-icon="transactions" data-testid="nav-transactions">Transactions</a></li>
+          <li><a href="#/queue" data-view="queue" data-icon="queue" data-testid="nav-queue">Queue monitor</a></li>
+        </ul>
+        <div class="navLabel" id="navBiz">Business</div>
+        <ul class="nav" aria-labelledby="navBiz">
+          <li><a href="#/earnings" data-view="earnings" data-icon="earnings" data-testid="nav-earnings">Earnings</a></li>
+          <li><a href="#/funds" data-view="funds" data-icon="funds" data-testid="nav-funds">Partner funds</a></li>
+          <li><a href="#/enquiries" data-view="enquiries" data-icon="enquiries" data-testid="nav-enquiries">Partnership enquiries</a></li>
+        </ul>
+      </nav>
+      <div class="sideFoot">
+        <button type="button" id="openConnection" class="connBtn" data-testid="open-connection-btn">
+          <span class="dot" id="connDot" aria-hidden="true"></span>
+          <span>
+            <span class="connTitle">API connection</span>
+            <span class="connState" id="connLabel" data-testid="connection-state">Not connected</span>
+          </span>
+        </button>
       </div>
+    </aside>
+    <div class="scrim" id="navScrim" hidden></div>
 
-      <div class="pager">
-        <button id="prev" class="ghost">Prev</button>
-        <div class="muted" id="pageInfo">-</div>
-        <button id="next" class="ghost">Next</button>
-      </div>
-    </section>
-
-    <section class="panel">
-      <div class="panelHead">
-        <h2>Queue</h2>
-        <div class="filters">
-          <button id="refreshQueue">Refresh Queue</button>
+    <div class="main">
+      <header class="topbar">
+        <button type="button" class="iconBtn menuBtn" id="menuBtn" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false" data-testid="menu-btn"></button>
+        <h1 id="pageTitle" data-testid="page-title">Overview</h1>
+        <span class="crumb">USD payouts · Somalia</span>
+        <div class="topMeta">
+          <span class="scopeChip" id="scopeChip" data-testid="partner-scope" title="Authenticated administrator access; payout and queue views cover all partners.">Partner scope: All partners</span>
+          <span class="fresh" id="freshness" data-testid="data-freshness" aria-live="polite">Not loaded</span>
         </div>
+      </header>
+
+      <div class="banner" id="banner" role="alert" hidden data-testid="error-banner">
+        <span id="bannerText"></span>
+        <button type="button" class="btn secondary sm" id="bannerRetry" data-testid="error-banner-retry">Retry</button>
       </div>
 
-      <div class="tableWrap">
-        <table id="queue">
-          <thead>
-            <tr>
-              <th>Queued</th>
-              <th>Payout</th>
-              <th>Queue Status</th>
-              <th>Lease Until</th>
-              <th>Worker</th>
-              <th>Recipient</th>
-              <th>Amount</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
+      <main id="main" class="content" tabindex="-1">
+        <section class="empty connectPrompt" id="connectPrompt" hidden data-testid="connect-prompt">
+          <h2>Connect to the payout API</h2>
+          <p>Sign in with an administrator account to load payout operations.</p>
+          <button type="button" class="btn primary" id="connectPromptBtn" data-testid="connect-prompt-btn">Open connection settings</button>
+        </section>
 
-    <div class="drawer" id="drawer">
-      <div class="drawerCard">
-        <div class="drawerHead">
-          <h3>Payout Details</h3>
-          <button id="closeDrawer" class="ghost">Close</button>
-        </div>
-        <pre id="details" class="pre"></pre>
-      </div>
+        <section class="block" data-views="overview transactions" data-part="summary" aria-labelledby="sumHead">
+          <div class="blockHead">
+            <h2 id="sumHead">Payout summary</h2>
+            <span class="caption" id="sumCaption">All recorded payouts · not affected by table filters. “Sent” is not a delivery confirmation.</span>
+          </div>
+          <div class="cards" id="summaryCards" data-testid="payout-summary"></div>
+          <p class="caption extraStates" id="extraPayoutStates" aria-live="polite"></p>
+        </section>
+
+        <section class="block" data-views="overview queue" data-part="summary" aria-labelledby="qHead">
+          <div class="strip" data-testid="queue-strip">
+            <div class="stripLabel">
+              <h2 id="qHead">Worker queue</h2>
+              <span class="caption">Job states, not payout outcomes</span>
+            </div>
+            <div class="stripItems" id="queueStrip"></div>
+          </div>
+        </section>
+
+        <section class="panel" data-views="overview" data-part="recent" aria-labelledby="recentHead">
+          <div class="panelHead">
+            <div class="titleRow">
+              <h2 id="recentHead">Recent transactions</h2>
+              <span class="caption">Latest 10 by creation time</span>
+            </div>
+            <a class="btn secondary sm" href="#/transactions" data-testid="view-all-transactions">View all transactions</a>
+          </div>
+          <div class="tableWrap"><table id="recentTable" data-testid="recent-table"><caption class="sr">Recent transactions</caption><thead></thead><tbody></tbody></table></div>
+        </section>
+
+        <section class="panel" data-views="transactions" data-part="payouts" aria-labelledby="txHead">
+          <div class="panelHead">
+            <div class="titleRow">
+              <h2 id="txHead">Transactions</h2>
+              <span class="count" id="txCount" data-testid="tx-result-count" aria-live="polite"></span>
+            </div>
+            <div class="toolbar">
+              <div class="searchBox">
+                <label for="search" class="sr">Search recipient or transaction reference</label>
+                <span class="searchIcon" aria-hidden="true"></span>
+                <input id="search" type="search" placeholder="Search recipient or transaction reference" autocomplete="off" data-testid="tx-search-input" />
+              </div>
+              <label for="status" class="sr">Payout status</label>
+              <select id="status" data-testid="tx-status-filter">
+                <option value="">All payout statuses</option>
+                <option value="RECEIVED">Received</option>
+                <option value="PROCESSING">Processing</option>
+                <option value="SENT">Sent</option>
+                <option value="FAILED">Failed</option>
+                <option value="UNKNOWN">Outcome unknown</option>
+                <option value="CANCELLED">Cancelled</option>
+                <option value="REJECTED">Rejected</option>
+              </select>
+              <label class="toggle"><input type="checkbox" id="techToggle" data-testid="tech-columns-toggle" /> Technical columns</label>
+              <button type="button" class="btn secondary" id="refresh" data-testid="tx-refresh-btn"><span class="spin" aria-hidden="true"></span><span>Refresh</span></button>
+            </div>
+          </div>
+          <div class="chips" id="activeFilters" data-testid="active-filters" hidden></div>
+          <div class="tableWrap" id="txWrap"><table id="txTable" data-testid="tx-table"><caption class="sr">Transactions</caption><thead></thead><tbody></tbody></table></div>
+          <div class="pager">
+            <span class="caption" id="pageInfo" data-testid="tx-page-info"></span>
+            <div class="pagerBtns">
+              <button type="button" class="btn secondary sm" id="prev" data-testid="tx-prev-btn">Previous</button>
+              <button type="button" class="btn secondary sm" id="next" data-testid="tx-next-btn">Next</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" data-views="queue" data-part="queue" aria-labelledby="queueHead">
+          <div class="panelHead">
+            <div class="titleRow">
+              <h2 id="queueHead">Queue jobs</h2>
+              <span class="count" id="queueCount" data-testid="queue-count"></span>
+            </div>
+            <button type="button" class="btn secondary" id="refreshQueue" data-testid="queue-refresh-btn"><span class="spin" aria-hidden="true"></span><span>Refresh</span></button>
+          </div>
+          <p class="note">A queue job is a worker task. A completed job does not confirm that the payout succeeded; check the payout status.</p>
+          <div class="tableWrap" id="queueWrap"><table id="queueTable" data-testid="queue-table"><caption class="sr">Queue jobs</caption><thead></thead><tbody></tbody></table></div>
+        </section>
+
+        <section class="block" data-views="earnings" data-part="earnings" aria-labelledby="earningsHead">
+          <div class="blockHead"><h2 id="earningsHead">Transaction fee revenue</h2><span class="caption">Recognized fees from the financial ledger. Partner funding is separate from revenue.</span></div>
+          <form id="earningsFilters" class="panel reportFilters">
+            <label>Period<select id="earningsPeriod"><option value="today">Today</option><option value="7days">Last 7 days</option><option value="month" selected>This month</option><option value="custom">Custom dates</option></select></label>
+            <label>From<input id="earningsStart" type="date" disabled /></label><label>Through<input id="earningsEnd" type="date" disabled /></label>
+            <label>Partner ID<input id="earningsPartner" type="number" min="1" step="1" placeholder="All partners" /></label>
+            <label>Currency<select id="earningsCurrency"><option>USD</option><option>EUR</option><option>GBP</option></select></label>
+            <label>Activity<select id="earningsActivity"><option value="live">Live</option><option value="simulation">Simulation / test</option><option value="unclassified">Unclassified historical</option></select></label>
+            <button type="submit" class="btn primary" id="refreshEarnings">Apply filters</button>
+          </form>
+          <p class="caption" id="earningsScope" aria-live="polite"></p>
+          <div class="cards" id="earningsCards" data-testid="earnings-summary"></div>
+          <section class="panel"><div class="panelHead"><h3>Daily net fee revenue</h3></div><div id="earningsTrend" class="trend"></div></section>
+          <section class="panel"><div class="panelHead"><h3>By partner</h3><span class="caption">Select a partner to filter its fee audit</span></div><div class="tableWrap"><table id="earningsPartners"><caption class="sr">Fees by partner</caption><thead></thead><tbody></tbody></table></div><div class="pager"><span class="caption" id="earningsPartnersInfo"></span><div class="pagerBtns"><button type="button" class="btn secondary sm" id="prevEarningsPartners">Previous</button><button type="button" class="btn secondary sm" id="moreEarningsPartners">Next</button></div></div></section>
+        </section>
+        <section class="panel" data-views="earnings" data-part="feeDetails" aria-labelledby="feeHead">
+          <div class="panelHead"><h2 id="feeHead">Transaction fee audit</h2><a class="btn secondary sm" id="earningsExport" href="/admin/api/earnings/export.csv">Export CSV</a></div>
+          <p class="note">Cards show fees posted in the selected period. Audit rows show lifetime fee amounts for each payout; pending fees are already included in reservations.</p>
+          <div class="reportFilters compact"><label>Fee state<select id="feeState"><option value="">All fee states</option><option>PENDING</option><option>EARNED</option><option>PARTIALLY_REVERSED</option><option>REVERSED</option><option>RELEASED</option><option>RECONCILIATION_REQUIRED</option><option>ZERO_FEE</option></select></label><label>Sort<select id="feeSort"><option value="accepted_desc">Newest admission</option><option value="accepted_asc">Oldest admission</option><option value="fee_desc">Largest fee</option><option value="recognized_desc">Latest recognition</option></select></label></div>
+          <div class="tableWrap"><table id="feeTable"><caption class="sr">Transaction fee audit</caption><thead></thead><tbody></tbody></table></div>
+          <div class="pager"><span class="caption" id="feePageInfo"></span><div class="pagerBtns"><button class="btn secondary sm" id="feePrev" type="button">Previous</button><button class="btn secondary sm" id="feeNext" type="button">Next</button></div></div>
+        </section>
+        <section class="panel" data-views="funds" data-part="funds" aria-labelledby="fundsHead">
+          <div class="panelHead"><h2 id="fundsHead">Partner funds</h2><button type="button" class="btn secondary" id="refreshFunds">Refresh</button></div>
+          <form id="fundsFilters" class="reportFilters compact"><label>Search partner<input id="fundsSearch" type="search" maxlength="160" placeholder="Partner name or ID" /></label><label>Status<select id="fundsStatus"><option value="">All partners</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label><label>Sort<select id="fundsSort"><option value="balance_desc">Highest balance</option><option value="balance_asc">Lowest balance</option><option value="name_asc">Name A to Z</option><option value="name_desc">Name Z to A</option><option value="id_desc">Newest partner</option></select></label><button type="submit" class="btn primary">Apply filters</button></form>
+          <p class="note">Available and reserved balances are partner funds, not Hubaal revenue. Each balance uses the partner's funding currency.</p>
+          <div class="tableWrap"><table id="fundsTable"><caption class="sr">Partner balances</caption><thead></thead><tbody></tbody></table></div>
+          <div class="pager"><span class="caption" id="fundsPageInfo"></span><div class="pagerBtns"><button class="btn secondary sm" id="fundsPrev" type="button">Previous</button><button class="btn secondary sm" id="fundsNext" type="button">Next</button></div></div>
+        </section>
+        <section class="panel" data-views="enquiries" data-part="enquiries" aria-labelledby="enquiriesHead">
+          <div class="panelHead"><h2 id="enquiriesHead">Partnership enquiries</h2><div class="toolbar"><form id="enquiriesFilters"><label class="sr" for="enquiriesSearch">Search enquiries</label><input id="enquiriesSearch" type="search" maxlength="160" placeholder="Company, country, contact or reference" /></form><button type="button" class="btn secondary" id="refreshEnquiries">Refresh</button></div></div>
+          <p class="note">Website enquiries received by the payout operations team.</p>
+          <div class="tableWrap"><table id="enquiriesTable"><caption class="sr">Partnership enquiries</caption><thead></thead><tbody></tbody></table></div>
+          <div class="pager"><span class="caption" id="enquiriesPageInfo"></span><div class="pagerBtns"><button class="btn secondary sm" id="enquiriesPrev" type="button">Previous</button><button class="btn secondary sm" id="enquiriesNext" type="button">Next</button></div></div>
+        </section>
+      </main>
     </div>
-    <div class="card">
-    <div class="card-body">
-        <h5 class="card-title">Funds Management</h5>
-        <p class="card-text">Manage partner balances and deposits.</p>
-        <a href="/admin/funds" class="btn btn-primary">
-            <i class="fas fa-money-bill-wave me-1"></i> Manage Funds
-        </a>
-    </div>
-</div>
   </div>
 
-  <script src="/static/admin.js"></script>
+  <div class="overlay" id="drawerRoot" hidden>
+    <div class="overlayScrim" data-close="drawer"></div>
+    <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle" tabindex="-1" data-testid="tx-drawer">
+      <div class="drawerHead">
+        <div>
+          <h2 id="drawerTitle">Payout details</h2>
+          <div class="caption" id="drawerSub"></div>
+        </div>
+        <button type="button" class="iconBtn" id="closeDrawer" aria-label="Close details" data-testid="tx-drawer-close"></button>
+      </div>
+      <div class="drawerBody" id="drawerBody"></div>
+    </aside>
+  </div>
+
+  <div class="overlay center" id="connRoot" hidden>
+    <div class="overlayScrim" data-close="conn"></div>
+    <div class="modal" id="connModal" role="dialog" aria-modal="true" aria-labelledby="connTitle" tabindex="-1" data-testid="connection-modal">
+      <div class="drawerHead">
+        <h2 id="connTitle">API connection</h2>
+        <button type="button" class="iconBtn" id="closeConn" aria-label="Close connection settings" data-testid="connection-close"></button>
+      </div>
+      <div class="connForm">
+        <p class="caption">This dashboard uses your authenticated administrator session.</p>
+        <dl class="kv"><dt>Administrator</dt><dd id="sessionUsername">Checking session...</dd><dt>Access</dt><dd>All partners</dd></dl>
+        <p class="caption" id="connStatus" aria-live="polite" data-testid="connection-status"></p>
+        <div class="formBtns"><a class="btn secondary" href="/login" id="sessionSignIn">Sign in</a><button type="button" class="btn ghost" id="logoutSession">Sign out</button><button type="button" class="btn primary" id="reconnectSession">Refresh connection</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay center" id="businessRoot" hidden>
+    <div class="overlayScrim" data-close="business"></div>
+    <div class="modal businessModal" id="businessDialog" role="dialog" aria-modal="true" aria-labelledby="businessTitle" tabindex="-1">
+      <div class="drawerHead"><h2 id="businessTitle"></h2><button type="button" class="iconBtn" id="closeBusiness" aria-label="Close"></button></div>
+      <div id="businessBody" class="drawerBody"></div>
+    </div>
+  </div>
+  <div class="toasts" id="toasts" role="status" aria-live="polite" data-testid="toast-region"></div>
+
+  <script type="module" src="/static/admin.js?v=20261010-1"></script>
 </body>
 </html>

@@ -1,0 +1,8 @@
+<footer class="site-footer"><div class="container footer-grid"><div class="footer-brand"><a href="{{ link('/') }}" aria-label="{{ business.brand }}"><img src="/static/hubaal/wordmark.svg" width="170" height="54" alt="{{ business.brand }}"></a><p>{{ copy.footer_description }}</p></div>
+<div><h2>{{ copy.customers }}</h2><a href="{{ link('/receive') }}">{{ copy.nav_receive }}</a><a href="{{ link('/track') }}">{{ copy.track }}</a><a href="{{ link('/help') }}">{{ copy.nav_help }}</a><a href="{{ link('/contact') }}">{{ copy.contact }}</a></div>
+<div><h2>{{ copy.business }}</h2><a href="{{ link('/partners') }}">{{ copy.nav_partners }}</a><a href="{{ link('/about') }}">{{ copy.nav_about }}</a>{% if business.portal_url %}<a href="{{ business.portal_url }}">{{ copy.portal }}</a>{% endif %}</div>
+<div><h2>{{ copy.policies }}</h2><a href="{{ link('/privacy') }}">{{ copy.privacy }}</a><a href="{{ link('/terms') }}">{{ copy.terms }}</a><a href="{{ link('/complaints') }}">{{ copy.complaints }}</a>
+{% if business.contact.email %}<a href="mailto:{{ business.contact.email }}">{{ business.contact.email }}</a>{% endif %}{% if business.contact.phone %}<a href="tel:{{ business.contact.phone }}">{{ business.contact.phone }}</a>{% endif %}
+{% if business.contact.whatsapp_url %}<a href="{{ business.contact.whatsapp_url }}">WhatsApp</a>{% endif %}
+{% if business.contact.address %}<p>{{ business.contact.address }}</p>{% endif %}{% if business.contact.hours %}<p>{{ business.contact.hours }} · {{ business.contact.timezone }}</p>{% endif %}</div></div>
+<div class="container footer-bottom"><span>© {{ year }} {{ business.brand }}</span>{% if business.licensing_disclosure %}<span>{{ business.licensing_disclosure }}</span>{% endif %}</div></footer>

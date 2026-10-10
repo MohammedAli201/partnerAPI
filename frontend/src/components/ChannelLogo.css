@@ -1,0 +1,19 @@
+.channel-logo {
+  --channel-logo-height: 64px;
+  width: 96px;
+  height: var(--channel-logo-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.channel-logo-frame {
+  position: relative;
+  width: min(100%, calc(var(--channel-logo-height) * var(--channel-logo-ratio)));
+  aspect-ratio: var(--channel-logo-ratio);
+  overflow: hidden;
+}
+.channel-logo-frame img { position: absolute; max-width: none; }
+@media (min-width: 640px) {
+  .channel-logo { --channel-logo-height: 72px; width: 112px; }
+}

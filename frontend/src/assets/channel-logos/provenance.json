@@ -1,0 +1,75 @@
+{
+  "source": "Latest user-supplied PNG receiving-channel logos, including standalone Salaam Bank, ZAAD and Premier Bank. Original files unchanged; transparent margins normalized in CSS only.",
+  "images": [
+    {
+      "source": "C:\\Users\\Mohamed\\Downloads\\Unboxed Premier Bank logo with green lotus-1.png",
+      "local_file": "premier-bank.png",
+      "sha256": "ad51ffb145b4dea125eb54a8eb7c8c3e7cd07596c8bcaee8404dca92c674b717",
+      "bytes": 640908,
+      "width": 1546,
+      "height": 1017,
+      "display_frame": [
+        93,
+        126,
+        1372,
+        853
+      ]
+    },
+    {
+      "source": "C:\\Users\\Mohamed\\Downloads\\Salaam Bank standalone wordmark-3.png",
+      "local_file": "salaam-bank.png",
+      "sha256": "43a9b8da3e22a2ab5899e3d28f95f1f6ab7c9f5a21feed35cc8ee0a654300bd8",
+      "bytes": 421486,
+      "width": 1774,
+      "height": 887,
+      "display_frame": [
+        125,
+        171,
+        1559,
+        634
+      ]
+    },
+    {
+      "source": "C:\\Users\\Mohamed\\Downloads\\edahab.png",
+      "local_file": "edahab.png",
+      "sha256": "d55b76c2b1531067c94945e66e65546693515d7d687950a0998d37afd00f58fe",
+      "bytes": 476743,
+      "width": 2076,
+      "height": 758,
+      "display_frame": [
+        154,
+        184,
+        1768,
+        405
+      ]
+    },
+    {
+      "source": "C:\\Users\\Mohamed\\Downloads\\ZAAD green wordmark and phone symbol-2.png",
+      "local_file": "zaad.png",
+      "sha256": "94c49795e4a1ac315ee51d60d3a46b9d61652ff7bb5f99d4343bf57f72e06594",
+      "bytes": 494485,
+      "width": 1254,
+      "height": 1254,
+      "display_frame": [
+        109,
+        168,
+        1036,
+        951
+      ]
+    },
+    {
+      "source": "C:\\Users\\Mohamed\\Downloads\\evc-plus.png",
+      "local_file": "evc-plus.png",
+      "sha256": "f721a2c822b85e818a9a7ef6026a2f57fe75815221e3d5c31c3235b4d9e43792",
+      "bytes": 436145,
+      "width": 1972,
+      "height": 798,
+      "display_frame": [
+        115,
+        192,
+        1721,
+        433
+      ]
+    }
+  ]
+}

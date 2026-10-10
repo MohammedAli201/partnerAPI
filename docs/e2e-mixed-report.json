@@ -1,0 +1,259 @@
+{
+  "run_id": "7b33cb2e-a16b-41f9-9024-3a869a499ec8",
+  "profile": "mixed",
+  "mode": "accelerated",
+  "configuration": {
+    "profile": "mixed",
+    "period": 120.0,
+    "partner_config": null,
+    "phones": 10,
+    "seed": 260109,
+    "concurrency": 64,
+    "connections": 96,
+    "timeout": 30,
+    "drain_timeout": 7200.0,
+    "app_workers": 2,
+    "mode": "accelerated",
+    "session_seconds": 30,
+    "accelerated_delay": 0.002
+  },
+  "environment": {
+    "python": "3.12.3",
+    "platform": "win32",
+    "logical_cpus": 4,
+    "database": {
+      "server_version": "18.1",
+      "shared_buffers": "128MB",
+      "max_connections": "100"
+    },
+    "app_processes": 2,
+    "pool_per_process": 12,
+    "overflow_per_process": 8,
+    "phone_count": 10,
+    "local_callback_transport": "Actual HTTP loopback relay; TLS/DNS production path verified separately"
+  },
+  "unique_instructions": 10000,
+  "initial_burst": 6000,
+  "staggered_scheduled_rate": 33.333333333333336,
+  "achieved_new_admission_rate": 9.975997749415315,
+  "additional_probes": {
+    "identical": 1000,
+    "conflict": 100,
+    "invalid_credentials": 100,
+    "cross_partner": 100,
+    "malformed": 100
+  },
+  "http_status_and_failure_counts": {
+    "provision:200": 4,
+    "opening:200": 8,
+    "prefund:200": 4,
+    "endpoint:200": 4,
+    "unpause:200": 1,
+    "claim:200": 11007,
+    "unique:201": 10000,
+    "duplicate:201": 1000,
+    "arm:200": 9500,
+    "success:202": 9200,
+    "retry_before_arm:202": 499,
+    "duplicate_worker_result:202": 92,
+    "stale_worker_result:202": 92,
+    "heartbeat:200": 200,
+    "definitive_failure:202": 500,
+    "unknown:202": 300,
+    "containment:200": 600,
+    "containment:ReadError": 2,
+    "unique:ReadError": 4,
+    "prearm_stale:202": 1,
+    "claim:ReadError": 1,
+    "duplicate:ReadError": 1,
+    "unique:429": 407,
+    "duplicate:429": 38,
+    "conflict:409": 100,
+    "invalid_credentials:401": 100,
+    "cross_partner:404": 100,
+    "malformed:422": 100,
+    "conflict:429": 6,
+    "malformed:429": 23
+  },
+  "http_attempts": 43894,
+  "scheduling_delay_seconds": {
+    "50": 403.719,
+    "95": 879.2469,
+    "99": 880.1828,
+    "100": 881.7477
+  },
+  "client_queue_delay_seconds": {
+    "50": 403.594,
+    "95": 879.0,
+    "99": 879.968,
+    "100": 881.578
+  },
+  "admission_response_latency_seconds": {
+    "50": 1.219,
+    "95": 9.64,
+    "99": 60.531,
+    "100": 63.14
+  },
+  "scheduled_to_admission_seconds": {
+    "50": 405.813,
+    "95": 880.4166,
+    "99": 881.3489,
+    "100": 882.7123
+  },
+  "queue_wait_seconds": {
+    "50": 661.4392,
+    "95": 981.6798,
+    "99": 1011.0837,
+    "100": 1030.9145
+  },
+  "end_to_end_seconds": {
+    "50": 1062.453,
+    "95": 1840.0999,
+    "99": 1876.9145,
+    "100": 1885.5995
+  },
+  "admission_drain_seconds": 1002.405999999959,
+  "total_drain_seconds": 2001.2189999999828,
+  "outcomes": {
+    "SENT": 9200,
+    "FAILED": 500,
+    "UNKNOWN": 300
+  },
+  "execution_attempts": 10500,
+  "operator_effects": 9350,
+  "unknown_operator_effects": 150,
+  "unknown_cases": 300,
+  "expected_webhook_events": 20500,
+  "webhook_delivery_attempts": 21667,
+  "webhook_delivery_latency_seconds": {
+    "50": 0.9532,
+    "95": 6.1607,
+    "99": 10.8913,
+    "100": 18.3662
+  },
+  "undelivered_events": 0,
+  "faults": {
+    "duplicate_worker_result": true,
+    "stale_worker_result": true,
+    "worker_restart_after_operator_payment": true,
+    "lease_after_arm": true,
+    "lease_before_arm": true
+  },
+  "per_partner": {
+    "atlas": {
+      "unique_payouts": 6000,
+      "outcomes": {
+        "SENT": 5530,
+        "FAILED": 303,
+        "UNKNOWN": 167
+      },
+      "webhook_unique_receipts": 12301,
+      "webhook_attempts": 12302,
+      "signature_rejections": 1,
+      "financial_balance_minor": 12221611,
+      "financial_reserved_minor": 4131828,
+      "receiver_response_counts": {
+        "202": 12301,
+        "401": 1
+      },
+      "admission_completion_seconds": 1002.406,
+      "initial_outcomes": {
+        "SUCCESS": 5117,
+        "FAILURE": 303,
+        "RETRY": 301,
+        "UNKNOWN": 167,
+        "DELAYED": 112
+      }
+    },
+    "britannia": {
+      "unique_payouts": 2500,
+      "outcomes": {
+        "SENT": 2293,
+        "FAILED": 123,
+        "UNKNOWN": 84
+      },
+      "webhook_unique_receipts": 5128,
+      "webhook_attempts": 5883,
+      "signature_rejections": 0,
+      "financial_balance_minor": 5194188,
+      "financial_reserved_minor": 2112627,
+      "receiver_response_counts": {
+        "202": 5128,
+        "500": 755
+      },
+      "admission_completion_seconds": 596.985,
+      "initial_outcomes": {
+        "SUCCESS": 2102,
+        "FAILURE": 123,
+        "RETRY": 128,
+        "UNKNOWN": 84,
+        "DELAYED": 63
+      }
+    },
+    "liberty": {
+      "unique_payouts": 1000,
+      "outcomes": {
+        "SENT": 914,
+        "FAILED": 49,
+        "UNKNOWN": 37
+      },
+      "webhook_unique_receipts": 2048,
+      "webhook_attempts": 2460,
+      "signature_rejections": 0,
+      "financial_balance_minor": 2139464,
+      "financial_reserved_minor": 869278,
+      "receiver_response_counts": {
+        "0": 96,
+        "202": 2048,
+        "503": 316
+      },
+      "admission_completion_seconds": 319.797,
+      "initial_outcomes": {
+        "SUCCESS": 857,
+        "FAILURE": 49,
+        "RETRY": 48,
+        "UNKNOWN": 37,
+        "DELAYED": 9
+      }
+    },
+    "nordic": {
+      "unique_payouts": 500,
+      "outcomes": {
+        "FAILED": 25,
+        "SENT": 463,
+        "UNKNOWN": 12
+      },
+      "webhook_unique_receipts": 1023,
+      "webhook_attempts": 1023,
+      "signature_rejections": 0,
+      "financial_balance_minor": 1002736,
+      "financial_reserved_minor": 278281,
+      "receiver_response_counts": {
+        "202": 1023
+      },
+      "admission_completion_seconds": 176.578,
+      "initial_outcomes": {
+        "SUCCESS": 424,
+        "FAILURE": 25,
+        "RETRY": 23,
+        "UNKNOWN": 12,
+        "DELAYED": 16
+      }
+    }
+  },
+  "assertions_total": 20550,
+  "failed_assertions": [],
+  "all_assertions_passed": true,
+  "limitations": [
+    "Accelerated software simulation is not physical USSD throughput",
+    "No real partner/operator or Android phone was connected",
+    "Documented quotas remain enabled; 429 retries are included in drain latency",
+    "No production database was touched"
+  ],
+  "summary_notes": [
+    "8 backend-call transport ReadErrors were retried with the same business/result identity; no timeout exceptions were recorded",
+    "474 contractual 429 responses across submissions/retries/probes; all required final probe codes matched",
+    "The negative signature probe is one extra receiver attempt outside the durable backend outbox",
+    "Two development runs were explicitly interrupted before this passing run; they are not measured complete scenarios"
+  ]
+}

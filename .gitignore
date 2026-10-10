@@ -1,0 +1,16 @@
+.env.local
+__pycache__/
+.pytest_cache/
+venv/
+.venv-central/
+.central-test-path
+.benchmark-http.log
+.simulation-runs/
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+.env
+frontend/node_modules/
+frontend/.f0-reference/
+frontend/audit-before.json
+static/hubaal-react/

@@ -1,0 +1,83 @@
+{
+  "google_fonts_css": "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Figtree:wght@400..700&family=Space+Mono:wght@400;700&display=swap",
+  "files": [
+    {
+      "family": "Figtree",
+      "style": "normal",
+      "weight": "400 700",
+      "subset": "latin-ext",
+      "source_url": "https://fonts.gstatic.com/s/figtree/v9/_Xms-HUzqDCFdgfMm4q9DbZs.woff2",
+      "filename": "figtree-normal-400-700-latin-ext.woff2",
+      "bytes": 10280
+    },
+    {
+      "family": "Figtree",
+      "style": "normal",
+      "weight": "400 700",
+      "subset": "latin",
+      "source_url": "https://fonts.gstatic.com/s/figtree/v9/_Xms-HUzqDCFdgfMm4S9DQ.woff2",
+      "filename": "figtree-normal-400-700-latin.woff2",
+      "bytes": 20156
+    },
+    {
+      "family": "Space Mono",
+      "style": "normal",
+      "weight": "400",
+      "subset": "latin-ext",
+      "source_url": "https://fonts.gstatic.com/s/spacemono/v17/i7dPIFZifjKcF5UAWdDRYE98RWq7.woff2",
+      "filename": "space-mono-normal-400-latin-ext.woff2",
+      "bytes": 15832
+    },
+    {
+      "family": "Space Mono",
+      "style": "normal",
+      "weight": "400",
+      "subset": "latin",
+      "source_url": "https://fonts.gstatic.com/s/spacemono/v17/i7dPIFZifjKcF5UAWdDRYEF8RQ.woff2",
+      "filename": "space-mono-normal-400-latin.woff2",
+      "bytes": 16520
+    },
+    {
+      "family": "Space Mono",
+      "style": "normal",
+      "weight": "700",
+      "subset": "latin-ext",
+      "source_url": "https://fonts.gstatic.com/s/spacemono/v17/i7dMIFZifjKcF5UAWdDRaPpZUFuaHjyV.woff2",
+      "filename": "space-mono-normal-700-latin-ext.woff2",
+      "bytes": 15808
+    },
+    {
+      "family": "Space Mono",
+      "style": "normal",
+      "weight": "700",
+      "subset": "latin",
+      "source_url": "https://fonts.gstatic.com/s/spacemono/v17/i7dMIFZifjKcF5UAWdDRaPpZUFWaHg.woff2",
+      "filename": "space-mono-normal-700-latin.woff2",
+      "bytes": 16724
+    },
+    {
+      "family": "Manrope",
+      "style": "normal",
+      "weight": "200 800",
+      "subset": "latin-ext",
+      "source_url": "https://fonts.gstatic.com/s/manrope/v20/xn7gYHE41ni1AdIRggmxSuXd.woff2",
+      "filename": "manrope-normal-200-800-latin-ext.woff2",
+      "bytes": 15120
+    },
+    {
+      "family": "Manrope",
+      "style": "normal",
+      "weight": "200 800",
+      "subset": "latin",
+      "source_url": "https://fonts.gstatic.com/s/manrope/v20/xn7gYHE41ni1AdIRggexSg.woff2",
+      "filename": "manrope-normal-200-800-latin.woff2",
+      "bytes": 24836
+    }
+  ],
+  "manrope_google_fonts_css": "https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap",
+  "active_families": [
+    "Manrope",
+    "Figtree",
+    "Space Mono"
+  ]
+}

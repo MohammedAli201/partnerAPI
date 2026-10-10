@@ -1,0 +1,82 @@
+[
+  {
+    "label": "Main text",
+    "foreground": "#153638",
+    "background": "#ffffff",
+    "ratio": 12.99,
+    "required": 4.5,
+    "passed": true
+  },
+  {
+    "label": "Body text",
+    "foreground": "#4c6266",
+    "background": "#f7faf9",
+    "ratio": 6.16,
+    "required": 4.5,
+    "passed": true
+  },
+  {
+    "label": "Muted text",
+    "foreground": "#62777a",
+    "background": "#ffffff",
+    "ratio": 4.73,
+    "required": 4.5,
+    "passed": true
+  },
+  {
+    "label": "Primary button",
+    "foreground": "#ffffff",
+    "background": "#116b63",
+    "ratio": 6.35,
+    "required": 4.5,
+    "passed": true
+  },
+  {
+    "label": "Hover button",
+    "foreground": "#ffffff",
+    "background": "#0e554f",
+    "ratio": 8.64,
+    "required": 4.5,
+    "passed": true
+  },
+  {
+    "label": "Accent text",
+    "foreground": "#116b63",
+    "background": "#eef5f2",
+    "ratio": 5.74,
+    "required": 4.5,
+    "passed": true
+  },
+  {
+    "label": "Input border",
+    "foreground": "#7a9293",
+    "background": "#ffffff",
+    "ratio": 3.3,
+    "required": 3,
+    "passed": true
+  },
+  {
+    "label": "Error text",
+    "foreground": "#b33e3a",
+    "background": "#ffffff",
+    "ratio": 5.73,
+    "required": 4.5,
+    "passed": true
+  },
+  {
+    "label": "Warning text",
+    "foreground": "#865319",
+    "background": "#fff5e7",
+    "ratio": 5.96,
+    "required": 4.5,
+    "passed": true
+  },
+  {
+    "label": "Focus outline",
+    "foreground": "#116b63",
+    "background": "#f7faf9",
+    "ratio": 6.05,
+    "required": 3,
+    "passed": true
+  }
+]

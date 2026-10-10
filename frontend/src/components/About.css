@@ -1,0 +1,59 @@
+.hubaal-about { background:#fff; padding:64px 0; color:#16202f; font-family:Manrope,sans-serif; }
+.hubaal-about-container { max-width:1200px; margin:0 auto; padding:0 20px; }
+.hubaal-about-layout { display:grid; gap:40px; align-items:center; }
+.hubaal-about-eyebrow { display:flex; align-items:center; gap:24px; color:#7c2434; font-size:11px; font-weight:700; line-height:1.5; letter-spacing:.18em; text-transform:uppercase; }
+.hubaal-about-eyebrow > span:first-child { flex-shrink:0; }
+.hubaal-about-rule { flex:1; height:1px; background:#bdc7d3; }
+.hubaal-about-title { margin-top:28px; font-size:32px; font-weight:800; line-height:1.12; letter-spacing:-.025em; }
+.hubaal-about-title > span { display:block; }
+.hubaal-about-title > span:last-child { color:#7c2434; }
+.hubaal-about-copy { margin-top:24px; font-size:18px; line-height:1.6; color:#475467; }
+.hubaal-about-outcome { margin-top:24px; }
+.hubaal-about-cta { margin-top:28px; display:inline-flex; align-items:center; justify-content:center; gap:18px; max-width:100%; padding:16px 26px; background:#7c2434; color:#fff; font-size:16px; font-weight:600; line-height:1.4; border-radius:999px; transition:background-color .3s; }
+.hubaal-about-cta:hover { background:#64202e; }
+.hubaal-about-cta svg { flex-shrink:0; }
+.hubaal-about-office-wrapper { min-width:0; }
+.hubaal-about-office { position:relative; overflow:hidden; padding:40px 28px; border-radius:24px; background:#16202f; color:#fff; box-shadow:0 12px 28px -14px rgba(22,32,47,.35); }
+.hubaal-about-orbits { position:absolute; top:0; right:0; pointer-events:none; }
+.hubaal-about-office-label,.hubaal-about-contact-label { position:relative; font-size:11px; font-weight:700; line-height:1.5; letter-spacing:.18em; text-transform:uppercase; }
+.hubaal-about-office-label { color:#e8c578; }
+.hubaal-about-location { position:relative; margin-top:32px; font-size:32px; font-weight:800; line-height:1.12; letter-spacing:-.025em; }
+.hubaal-about-contact { position:relative; display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-top:32px; padding-top:36px; border-top:1px solid #8793a3; }
+.hubaal-about-contact > div { min-width:0; }
+.hubaal-about-contact-label { color:#c2c9d2; }
+.hubaal-about-contact a { display:inline-block; margin-top:10px; font-size:16px; line-height:1.5; overflow-wrap:anywhere; }
+.hubaal-about-contact a:hover { text-decoration:underline; text-underline-offset:5px; }
+.hubaal-about-pin { flex-shrink:0; color:#e8c578; margin-bottom:6px; }
+.hubaal-about-points { display:grid; gap:28px; margin-top:40px; padding-top:32px; border-top:1px solid #cbd3dd; list-style:none; }
+.hubaal-about-points > li { min-width:0; }
+.hubaal-about-point-number { font-family:'Space Mono',monospace; color:#7c2434; font-size:12px; font-weight:400; line-height:1.5; letter-spacing:.12em; }
+.hubaal-about-points h3 { margin-top:12px; font-size:18px; font-weight:700; line-height:1.4; letter-spacing:-.01em; }
+.hubaal-about-points p { margin-top:14px; font-size:15px; line-height:1.6; color:#475467; }
+@media (min-width:640px) {
+ .hubaal-about { padding:96px 0; }
+ .hubaal-about-container { padding:0 32px; }
+ .hubaal-about-eyebrow { font-size:12px; }
+ .hubaal-about-title { font-size:40px; }
+ .hubaal-about-copy { font-size:20px; }
+ .hubaal-about-cta { padding:16px 28px; }
+ .hubaal-about-office { padding:48px 38px; }
+ .hubaal-about-location { font-size:40px; }
+ .hubaal-about-office-label,.hubaal-about-contact-label { font-size:12px; }
+ .hubaal-about-contact a { font-size:18px; }
+ .hubaal-about-points { grid-template-columns:repeat(3,minmax(0,1fr)); gap:0; padding-top:40px; margin-top:48px; }
+ .hubaal-about-points > li { padding:0 24px; }
+ .hubaal-about-points > li:first-child { padding-left:0; }
+ .hubaal-about-points > li:last-child { padding-right:0; }
+ .hubaal-about-points > li + li { border-left:1px solid #cbd3dd; }
+}
+@media (min-width:1024px) {
+ .hubaal-about { padding:112px 0 64px; }
+ .hubaal-about-layout { grid-template-columns:minmax(0,1.57fr) minmax(0,1fr); gap:40px; }
+ .hubaal-about-title { margin-top:32px; font-size:52px; line-height:1.1; }
+ .hubaal-about-copy { margin-top:28px; }
+ .hubaal-about-outcome { margin-top:28px; }
+ .hubaal-about-office { padding:48px 32px; }
+ .hubaal-about-location { font-size:44px; }
+ .hubaal-about-contact { margin-top:32px; padding-top:36px; }
+ .hubaal-about-points > li { padding:0 32px; }
+}

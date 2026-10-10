@@ -1,18 +1,18 @@
 import os
 import bcrypt
-from itsdangerous import URLSafeSerializer, BadSignature
 from fastapi import Request, HTTPException, Depends
 from fastapi.responses import RedirectResponse
 from config import get_settings
+from database import SessionLocal
+from browser_security import create,verify,revoke
 settings = get_settings()
 
 SECRET_KEY = settings.secret_key
-COOKIE_SECURE = settings.cookie_secure
+COOKIE_SECURE = settings.cookie_secure or settings.environment=='production'
 
 # SECRET_KEY = os.getenv("SECRET_KEY", "CHANGE_ME_LONG_RANDOM")
 # COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
 
-serializer = URLSafeSerializer(SECRET_KEY, salt="ui-session")
 
 
 # ---- password helpers ----
@@ -28,18 +28,26 @@ def verify_password(password: str, password_hash: str) -> bool:
 
 
 # ---- session helpers ----
-def make_session(uid: int, role: str) -> str:
-    return serializer.dumps({"uid": uid, "role": role})
+def make_session(uid: int, role: str, db=None) -> str:
+    if db is not None:
+        token,_=create(db,uid,SECRET_KEY)
+        return token
+    with SessionLocal.begin() as session:
+        token,_=create(session,uid,SECRET_KEY)
+        return token
 
 
 def read_session(token: str) -> dict | None:
     try:
-        return serializer.loads(token)
-    except BadSignature:
+        with SessionLocal.begin() as db:
+            return verify(db,token,SECRET_KEY)
+    except HTTPException:
         return None
 
 
 def set_session_cookie(resp, token: str):
+    from itsdangerous import URLSafeTimedSerializer
+    csrf=URLSafeTimedSerializer(SECRET_KEY,salt='ui-session-v2').loads(token)['csrf']
     resp.set_cookie(
         key="session",
         value=token,
@@ -49,19 +57,34 @@ def set_session_cookie(resp, token: str):
         max_age=60 * 60 * 12,   # 12 hours
         path="/",
     )
+    resp.set_cookie('csrf_token',csrf,secure=COOKIE_SECURE,httponly=False,samesite='lax',max_age=60*60*12,path='/')
 
 
 def clear_session_cookie(resp):
     resp.delete_cookie("session", path="/")
+    resp.delete_cookie('csrf_token',path='/')
+
+
+def revoke_session(token):
+    with SessionLocal.begin() as db:
+        revoke(db,token,SECRET_KEY)
 
 
 def get_session(request: Request) -> dict:
+    cached=getattr(request.state,'payout_session',None)
+    if cached:
+        return cached
     token = request.cookies.get("session")
     if not token:
         raise HTTPException(status_code=401, detail="Not logged in")
     data = read_session(token)
     if not data:
         raise HTTPException(status_code=401, detail="Invalid session")
+    from quotas import take
+    with SessionLocal.begin() as db:
+        operation='browser-write' if request.method in ('POST','PUT','PATCH','DELETE') else 'browser-read'
+        take(db,f"user:{data['uid']}",operation,240 if operation=='browser-write' else 1800,60)
+    request.state.payout_session=data
     return data
 
 

@@ -1,6 +1,8 @@
 # security.py
 import hashlib
 import secrets
+import os
+import hmac
 from typing import Tuple
 
 PBKDF2_ITERS = 120_000  # 100k–200k ok
@@ -21,6 +23,9 @@ def generate_api_key() -> Tuple[str, str, str]:
     display_key = f"{prefix}.{secret_part}"
     full_key = prefix + secret_part  # NO DOT
 
+    pepper=os.getenv('API_KEY_VERIFIER_SECRET','')
+    if len(pepper)>=32:
+        return display_key,prefix,'hmacv1:'+hmac.new(pepper.encode(),full_key.encode(),hashlib.sha256).hexdigest()
     salt = secrets.token_bytes(16)
     digest = hashlib.pbkdf2_hmac(
         "sha256",
@@ -54,6 +59,12 @@ def verify_api_key(api_key: str, stored_hash: str) -> bool:
     """
     if not validate_api_key_format(api_key):
         return False
+    if stored_hash.startswith('hmacv1:'):
+        pepper=os.getenv('API_KEY_VERIFIER_SECRET','')
+        if len(pepper)<32:
+            return False
+        full_key=api_key.replace('.','',1)
+        return secrets.compare_digest(hmac.new(pepper.encode(),full_key.encode(),hashlib.sha256).hexdigest(),stored_hash[7:])
 
     try:
         prefix, secret = api_key.split(".", 1)

@@ -28,8 +28,8 @@ def get_db() -> Session:
     db = SessionLocal()
     try:
         yield db
-    except Exception as e:
-        logger.error(f"Database error: {e}")
+    except Exception:
+        # SQLAlchemy exception strings can include bound partner/recipient data.
         db.rollback()
         raise
     finally:

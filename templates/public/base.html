@@ -1,0 +1,16 @@
+<!doctype html><html lang="{{ lang }}" dir="{{ languages[lang].direction }}"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ title }} · {{ business.brand }}</title><meta name="description" content="{{ description }}">
+{% if preview %}<meta name="robots" content="noindex,nofollow,noarchive">{% elif business.website_url %}<link rel="canonical" href="{{ business.website_url.rstrip('/') }}{{ request.url.path }}">{% endif %}
+<meta name="theme-color" content="#123C32"><link rel="icon" type="image/svg+xml" href="/static/hubaal/symbol.svg">
+<link rel="stylesheet" href="/static/hubaal/site.css"><script src="/static/csrf.js" defer></script>
+<script src="/static/hubaal/core.js" defer></script><script src="/static/hubaal/site.js" defer></script>
+{% if structured_data %}<script type="application/ld+json">{{ structured_data|tojson }}</script>{% endif %}
+<script id="public-copy" type="application/json">{{ client_copy|tojson }}</script>
+</head><body data-page="{{ page }}" data-mode="{{ business.launch_mode }}">
+<a class="skip-link" href="#main">{{ copy.skip }}</a>
+{% include 'public/header.html' %}
+
+<main id="main" tabindex="-1">{% block content %}{% endblock %}</main>
+{% include 'public/footer.html' %}
+</body></html>

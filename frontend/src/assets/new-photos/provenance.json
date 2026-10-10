@@ -1,0 +1,35 @@
+{
+  "source_archive": "C:\\Users\\Mohamed\\Documents\\partner frontend\\new\\src.zip",
+  "images": [
+    {
+      "source_url": "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=900&q=80",
+      "local_file": "photo-1450101499163-c8848c66ca85.jpg",
+      "bytes": 57222
+    },
+    {
+      "source_url": "https://images.unsplash.com/photo-1518458028785-8fbcd101ebb9?auto=format&fit=crop&w=900&q=80",
+      "local_file": "photo-1518458028785-8fbcd101ebb9.jpg",
+      "bytes": 46707
+    },
+    {
+      "source_url": "https://images.unsplash.com/photo-1571867424488-4565932edb41?auto=format&fit=crop&w=900&q=80",
+      "local_file": "photo-1571867424488-4565932edb41.jpg",
+      "bytes": 154195
+    },
+    {
+      "source_url": "https://images.unsplash.com/photo-1629697776275-725482b486f7?auto=format&fit=crop&w=800&q=80",
+      "local_file": "photo-1629697776275-725482b486f7.jpg",
+      "bytes": 43383
+    },
+    {
+      "source_url": "https://images.unsplash.com/photo-1687422809654-579d81c29d32?auto=format&fit=crop&w=1000&q=80",
+      "local_file": "photo-1687422809654-579d81c29d32.jpg",
+      "bytes": 181392
+    },
+    {
+      "source_url": "https://images.unsplash.com/photo-1758525226705-3061215c7445?auto=format&fit=crop&w=1000&q=80",
+      "local_file": "photo-1758525226705-3061215c7445.jpg",
+      "bytes": 86682
+    }
+  ]
+}

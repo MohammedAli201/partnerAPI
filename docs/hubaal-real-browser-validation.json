@@ -1,0 +1,46 @@
+[
+  {
+    "width_css_px": 390,
+    "device_scale": 1,
+    "passed": true,
+    "checks": [
+      "anchor navigation and responsive reflow",
+      "native keyboard drawer trapping, Escape and scroll unlock",
+      "language navigation preserves page and anchor",
+      "real validated unsent/unstored API, escaped review, download and focus restoration",
+      "injected 503 retains editable draft and reports failure",
+      "real UNKNOWN example requires action",
+      "native keyboard FAQ and searchable empty state"
+    ],
+    "page_errors": []
+  },
+  {
+    "width_css_px": 1440,
+    "device_scale": 1,
+    "passed": true,
+    "checks": [
+      "anchor navigation and responsive reflow",
+      "language navigation preserves page and anchor",
+      "real validated unsent/unstored API, escaped review, download and focus restoration",
+      "injected 503 retains editable draft and reports failure",
+      "real UNKNOWN example requires action",
+      "native keyboard FAQ and searchable empty state"
+    ],
+    "page_errors": []
+  },
+  {
+    "width_css_px": 720,
+    "device_scale": 2,
+    "passed": true,
+    "checks": [
+      "anchor navigation and responsive reflow",
+      "native keyboard drawer trapping, Escape and scroll unlock",
+      "language navigation preserves page and anchor",
+      "real validated unsent/unstored API, escaped review, download and focus restoration",
+      "injected 503 retains editable draft and reports failure",
+      "real UNKNOWN example requires action",
+      "native keyboard FAQ and searchable empty state"
+    ],
+    "page_errors": []
+  }
+]

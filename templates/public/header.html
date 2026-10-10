@@ -1,0 +1,13 @@
+<header class="site-header" id="site-header"><div class="container header-inner">
+<a class="logo" href="{{ link('/') }}" aria-label="{{ business.brand }}"><img src="/static/hubaal/wordmark.svg" width="170" height="54" alt="{{ business.brand }}"></a>
+<nav class="desktop-nav" aria-label="{{ copy.menu }}">
+{% for path,key,current in [('/#how-it-works','nav_how','how'),('/receive','nav_receive','receive'),('/partners','nav_partners','partners'),('/about','nav_about','about'),('/help','nav_help','help')] %}
+<a href="{{ link(path) }}" {% if page==current %}aria-current="page"{% endif %}>{{ copy[key] }}</a>{% endfor %}</nav>
+<div class="header-actions"><label class="language-control"><span class="sr-only">{{ copy.language }}</span><select id="language" aria-label="{{ copy.language }}">{% for code,meta in languages.items() %}<option value="{{ code }}" {% if lang==code %}selected{% endif %}>{{ 'EN' if code=='en' else 'SO' }}{% if not meta.human_reviewed %} · preview{% endif %}</option>{% endfor %}</select></label>
+<a class="button button-small header-cta" href="{{ link('/partners#enquiry') }}">{{ copy.cta }}</a>
+<button type="button" class="menu-toggle" id="menu-toggle" aria-controls="mobile-menu" aria-expanded="false">{{ copy.menu }} <span aria-hidden="true">☰</span></button></div>
+</div></header>
+<dialog class="mobile-menu" id="mobile-menu" aria-labelledby="menu-heading"><div class="mobile-menu-head"><h2 id="menu-heading">{{ copy.menu }}</h2><button class="icon-button" type="button" id="menu-close" aria-label="{{ copy.close }}">×</button></div>
+<nav aria-label="{{ copy.menu }}"><p class="eyebrow">{{ copy.customers }}</p><a href="{{ link('/#how-it-works') }}">{{ copy.nav_how }}</a><a href="{{ link('/receive') }}">{{ copy.nav_receive }}</a><a href="{{ link('/track') }}">{{ copy.track }}</a><a href="{{ link('/help') }}">{{ copy.nav_help }}</a><a href="{{ link('/contact') }}">{{ copy.contact }}</a>
+<p class="eyebrow">{{ copy.business }}</p><a href="{{ link('/partners') }}">{{ copy.nav_partners }}</a><a href="{{ link('/about') }}">{{ copy.nav_about }}</a>{% if business.portal_url %}<a href="{{ business.portal_url }}">{{ copy.portal }}</a>{% endif %}</nav>
+<a class="button" href="{{ link('/partners#enquiry') }}">{{ copy.cta }}</a></dialog>

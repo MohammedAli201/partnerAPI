@@ -1,0 +1,3 @@
+import {useBusiness} from '../business';
+import Reveal from './Reveal';
+export default function Stats(){const {copy}=useBusiness();return <section id="how-it-works" className="section-shell" data-testid="stats-band-container"><p className="eyebrow mb-5">{copy.how_label}</p><h2 className="section-title">{copy.how_title}</h2><div className="grid md:grid-cols-3 gap-8 mt-10">{[1,2,3].map(n=><Reveal key={n} className="border-l border-accent/25 pl-6"><p className="font-display text-4xl text-accent">0{n}</p><h3 className="font-display text-xl mt-4">{copy['step_'+n]}</h3><p className="mt-3 text-ink-dim leading-relaxed">{copy['step_'+n+'_text']}</p></Reveal>)}</div></section>;}

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Earnings · Payout operations</title><link rel="stylesheet" href="/static/admin.css">
+<link rel="stylesheet" href="/static/earnings.css"><script src="/static/csrf.js" defer></script><script src="/static/earnings.js" defer></script></head>
+<body><main class="wrap">
+<header class="top"><div><p class="eyebrow">PAYOUT OPERATIONS</p><h1>Earnings</h1><p class="muted">Recognized transaction fees, reconciled to the financial ledger.</p></div>
+<nav><a href="/admin">Transactions</a><a href="/admin/funds">Partner funds</a><a href="/admin/earnings" aria-current="page">Earnings</a></nav></header>
+<form id="filters" class="panel filters">
+<label>Period<select id="preset"><option value="today">Today</option><option value="7days">Last 7 days</option><option value="month" selected>This month</option><option value="custom">Custom dates</option></select></label>
+<label>From<input id="start" type="date" disabled></label><label>Through<input id="end" type="date" disabled></label>
+<label>Partner<select id="partner"><option value="">All partners</option></select></label>
+<label>Currency<select id="currency"><option>USD</option><option>EUR</option><option>GBP</option></select></label>
+<label>Activity<select id="activity"><option value="live">Live</option><option value="simulation">Simulation / test</option><option value="unclassified">Unclassified historical</option></select></label>
+<button id="refresh" type="submit">Refresh</button></form>
+<p id="status" role="status" aria-live="polite">Loading earnings…</p><p id="scope" class="muted"></p>
+<section class="cards" aria-label="Fee revenue"><div class="card primary"><div class="k">Net fee revenue</div><div class="v" id="net">—</div><p class="muted">Gross earned fees − fee reversals</p></div>
+<div class="card"><div class="k">Gross earned fees</div><div class="v" id="gross">—</div><p class="muted">Recognitions posted in the selected period</p></div>
+<div class="card"><div class="k">Pending fees</div><div class="v" id="pending">—</div><p class="muted">Current snapshot · included in reserved funds</p></div>
+<div class="card"><div class="k">Fee reversals</div><div class="v" id="reversals">—</div><p class="muted">Compensating entries posted in the selected period</p></div></section>
+<section class="panel"><h2>Daily net fee revenue</h2><div id="trend"></div></section>
+<section class="panel"><div class="panelHead"><h2>By partner</h2><span class="muted">Select a partner for its fee audit</span></div><div class="tableWrap"><table><thead><tr><th>Partner</th><th>Gross earned</th><th>Reversals</th><th>Net revenue</th><th>Pending now</th><th>Payouts</th></tr></thead><tbody id="partners"></tbody></table></div><button type="button" id="morePartners">More partners</button></section>
+<section class="panel"><div class="panelHead"><h2>Transaction fee audit</h2><a id="export" href="#">Export CSV</a></div>
+<p class="muted">Shows admissions and financial postings in the selected period, plus current holds. Fee amounts below are lifetime amounts for each payout; the cards above use posting dates.</p>
+<div class="filters"><label>Fee state<select id="state"><option value="">All fee states</option><option>PENDING</option><option>EARNED</option><option>PARTIALLY_REVERSED</option><option>REVERSED</option><option>RELEASED</option><option>RECONCILIATION_REQUIRED</option><option>ZERO_FEE</option></select></label>
+<label>Sort<select id="sort"><option value="accepted_desc">Newest admission</option><option value="accepted_asc">Oldest admission</option><option value="fee_desc">Largest fee</option><option value="recognized_desc">Latest recognition</option></select></label></div>
+<div class="tableWrap"><table><thead><tr><th>Partner / payout</th><th>Principal</th><th>Original fee</th><th>Payout / fee state</th><th>Recognized</th><th>Reversed</th><th>Ledger audit</th></tr></thead><tbody id="details"></tbody></table></div>
+<div class="panelHead"><button id="prev">Previous</button><span id="pagination"></span><button id="next">Next</button></div></section>
+<footer class="muted">Deposits and reserved principal are partner funds, not revenue. Pending fees are already part of reservations. Fees are deducted from prefunded liabilities on success; bank settlement and execution costs are not reported. No profit figure is inferred.</footer>
+</main></body></html>

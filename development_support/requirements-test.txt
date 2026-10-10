@@ -1,0 +1,3 @@
+# Additional dependencies for the original FastAPI simulator mount tests.
+fastapi==0.110.3
+httpx==0.27.2

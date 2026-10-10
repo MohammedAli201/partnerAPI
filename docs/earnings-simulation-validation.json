@@ -1,0 +1,14 @@
+{
+  "payout_count": 10000,
+  "csv_totals": {
+    "period_gross": "5520.00",
+    "period_reversals": "0.00",
+    "period_net": "5520.00",
+    "pending_fee": "180.00"
+  },
+  "csv_seconds": 3.0,
+  "activity": "simulation",
+  "currency": "USD",
+  "live_net": "0.00",
+  "reconciliation_gaps": 0
+}

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="{{ lang }}" dir="ltr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+{% set company_titles = {'home': 'Your payout partner in Somalia.', 'about': 'About Hubaal', 'help': 'Partner support', 'contact': 'Contact partner operations', 'privacy': 'Privacy Policy', 'terms': 'Terms of Service'} %}
+{% set page_title = company_titles.get(page, title) if lang == 'en' else title %}
+<title>{{ page_title }} · {{ business.brand }}</title><meta name="description" content="{{ description }}">
+<meta property="og:type" content="website"><meta property="og:site_name" content="{{ business.brand }}">
+<meta property="og:title" content="{{ page_title }} · {{ business.brand }}"><meta property="og:description" content="{{ description }}">
+{% if preview %}<meta name="robots" content="noindex,nofollow,noarchive">{% endif %}
+<meta name="theme-color" content="#FFFFFF"><link rel="icon" href="/static/hubaal/symbol.svg" type="image/svg+xml">
+{% if business.website_url %}<link rel="canonical" href="{{ business.website_url.rstrip('/') }}{{ request.url.path }}">{% endif %}
+{% if structured_data %}<script type="application/ld+json">{{ structured_data|tojson }}</script>{% endif %}
+{% for css in frontend_assets.css %}<link rel="stylesheet" href="{{ css }}">{% endfor %}
+<script id="hubaal-bootstrap" type="application/json">{{ bootstrap|tojson }}</script>
+<script type="module" src="{{ frontend_assets.js }}"></script>
+<link rel="stylesheet" href="/static/hubaal/fonts/hubaal-fonts.css">
+</head><body>
+<div id="root"></div>
+<noscript><header><a href="{{ link('/') }}">{{ business.brand }}</a></header><main id="main"><h1>{{ page_title }}</h1><p>{{ description }}</p>
+
+{% if preview %}<p>{{ business.licensing_disclosure }}</p>{% endif %}
+<p>For partnership enquiries, email <a href="mailto:partners@hubaal.so">partners@hubaal.so</a>.</p>
+<p>Enable JavaScript to use the partnership enquiry form.</p><nav><a href="{{ business.portal_url }}">{{ copy.portal }}</a></nav></main>
+<footer><a href="{{ link('/privacy') }}">{{ copy.privacy }}</a> · <a href="{{ link('/terms') }}">{{ copy.terms }}</a> · <a href="{{ link('/complaints') }}">{{ copy.complaints }}</a></footer></noscript>
+</body></html>

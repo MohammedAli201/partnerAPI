@@ -1,0 +1,8 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Partnership enquiries · Hubaal</title><link rel="stylesheet" href="/static/admin.css"></head><body><div class="wrap">
+<header class="top"><div><h1>Partnership enquiries</h1><p class="muted">Website enquiries received by the payout operations team.</p>
+<nav><a href="/admin">Dashboard</a> · <a href="/admin/earnings">Earnings</a></nav></div></header>
+<section class="panel"><div class="tableWrap"><table><thead><tr><th>Received (UTC)</th><th>Reference</th><th>Company</th><th>Country</th><th>Contact</th><th>Business email</th><th>Monthly volume</th><th>Channels</th></tr></thead>
+<tbody>{% for row in rows %}<tr><td>{{ row.created_at.strftime('%Y-%m-%d %H:%M') }}</td><td>{{ row.reference }}</td><td>{{ row.company_name }}</td><td>{{ row.country }}</td><td>{{ row.contact_name }}</td><td><a href="mailto:{{ row.email }}">{{ row.email }}</a></td><td>{{ row.monthly_volume }}</td><td>{{ row.channels }}</td></tr>
+{% else %}<tr><td colspan="8">No partnership enquiries received yet.</td></tr>{% endfor %}</tbody></table></div>
+<div class="pager">{% if page>1 %}<a href="?page={{ page-1 }}">Previous</a>{% endif %}<span class="muted">Page {{ page }}</span>{% if more %}<a href="?page={{ page+1 }}">Next</a>{% endif %}</div></section></div></body></html>
