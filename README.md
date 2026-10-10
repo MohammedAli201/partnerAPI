@@ -1,6 +1,6 @@
 # Partner-facing payout backend
 
-The supplied React frontend now serves the public Hubaal Express website at `/`
+The supplied React frontend now serves the public Hubaal website at `/`
 in this same application. Build it with `cd frontend`, `npm ci`, then `npm run build`.
 See [the React frontend handover](docs/REACT_FRONTEND.rst) for preview behavior,
 checks, screenshots and the business details needed before publication.
@@ -50,3 +50,14 @@ separate burst/spread profiles, transport boundaries and retained evidence.
 The supplied Hubaal admin dashboard runs at `/admin` after administrator sign-in.
 See [dashboard integration and verification](docs/ADMIN_DASHBOARD.rst) for its six
 API-connected views, funding controls and browser checks.
+
+## Offline authentication checks
+
+Run `python -m unittest discover -s tests -p test_security.py -v` for the
+standalone API-key checks, without contacting a database or payment provider.
+The GitHub offline workflow runs this focused suite; the full application test
+suite also needs the dependencies and disposable PostgreSQL setup above.
+
+Keep `.env` and Python environments local. `.env.example` contains placeholders,
+not deployable credentials. Removing credentials from the current source tree
+does not remove them from previous Git history or rotate their values.
