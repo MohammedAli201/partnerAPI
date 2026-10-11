@@ -6,6 +6,15 @@ upload ? development test settlement. Real money-transfer execution remains disa
 
 ## Build
 
+For a preconfigured package, set `PAYOUT_BACKEND_URL` to the HTTPS backend before
+building. On launch the app checks `/health` without credentials and updates its
+stored endpoint while preserving existing enrollment. Install over the existing
+app; uninstalling or clearing data removes its device credentials. For a new
+device, an optional `PAYOUT_ENROLLMENT_CODE` build variable supplies a single-use
+enrollment code. Such packages are device-specific and must not be committed or
+distributed as a general APK. Expired or consumed codes require provisioning a
+new package; enrollment authentication is never disabled.
+
 Install Android SDK 37 and JDK 17, then run:
 
 ```powershell

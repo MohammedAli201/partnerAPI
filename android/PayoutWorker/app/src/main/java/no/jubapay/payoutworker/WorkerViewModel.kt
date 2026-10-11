@@ -19,6 +19,13 @@ class WorkerViewModel(app: Application): AndroidViewModel(app) {
  val busy=MutableStateFlow(false)
  private var lastInteraction=0L
  init {viewModelScope.launch(Dispatchers.IO) {
+  if(BuildConfig.PROVISIONED_BACKEND.isNotBlank()) {
+   try {
+    g.backend.configureProvisionedBackend(BuildConfig.PROVISIONED_BACKEND,BuildConfig.PROVISIONED_ENROLLMENT)
+    enrolled.value=g.backend.enrolled()
+    message.value=if(enrolled.value)"HTTPS backend connected; existing enrollment retained"else"Device enrollment needs provisioning"
+   } catch(_:Exception) {message.value="Automatic HTTPS connection unavailable. Reopen the app when the backend is online."}
+  }
   while(isActive) {
    try {readiness.value=g.readiness.checks();pending.value=g.store.pending().size} catch(_:Exception){message.value="Local storage or protected settings unavailable"}
    if(unlocked.value && android.os.SystemClock.elapsedRealtime()-lastInteraction>120_000)unlocked.value=false

@@ -19,6 +19,16 @@ class HttpBackend(private val vault: Vault, private val key: DeviceKey,private v
  fun enrolled()=vault.get("credentials")!=null
  fun config(): DeviceConfig=Wire.config(JSONObject(vault.get("credentials")?:throw WorkerFailure.Authentication()).getJSONObject("config"))
  fun baseUrl()=vault.get("backend")?:""
+ suspend fun configureProvisionedBackend(url:String,code:String)=withContext(Dispatchers.IO) {
+  val base=checkedUrl(url)
+  require(base.startsWith("https://")) {"HTTPS_REQUIRED"}
+  // Check the supplied endpoint before migrating existing credentials. No credentials in this request.
+  client.newCall(Request.Builder().url(base+"/health").header("ngrok-skip-browser-warning","1").build()).execute().use {
+   check(it.isSuccessful) {"BACKEND_UNAVAILABLE"}
+  }
+  if(enrolled())vault.put("backend",base)
+  else if(code.isNotBlank())enroll(base,code)
+ }
  private fun checkedUrl(raw: String): String {
   val u=raw.toHttpUrl(); require(u.username.isEmpty()&&u.password.isEmpty()&&u.query==null&&u.fragment==null&&u.encodedPath=="/") {"INVALID_BACKEND_URL"}
   val local=u.host=="localhost" || u.host=="10.0.2.2" || u.host.matches(Regex("127\\.[0-9.]+|10\\.[0-9.]+|192\\.168\\.[0-9.]+|172\\.(1[6-9]|2[0-9]|3[01])\\.[0-9.]+"))

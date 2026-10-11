@@ -15,6 +15,8 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
+        buildConfigField("String", "PROVISIONED_BACKEND", "\"${providers.environmentVariable("PAYOUT_BACKEND_URL").getOrElse("")}\"")
+        buildConfigField("String", "PROVISIONED_ENROLLMENT", "\"${providers.environmentVariable("PAYOUT_ENROLLMENT_CODE").getOrElse("")}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
