@@ -13,8 +13,8 @@ android {
         applicationId = "no.jubapay.payoutworker"
         minSdk = 24
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
         buildConfigField("String", "PROVISIONED_BACKEND", "\"${providers.environmentVariable("PAYOUT_BACKEND_URL").getOrElse("")}\"")
         buildConfigField("String", "PROVISIONED_ENROLLMENT", "\"${providers.environmentVariable("PAYOUT_ENROLLMENT_CODE").getOrElse("")}\"")
 
@@ -22,12 +22,24 @@ android {
     }
 
     buildTypes {
+        create("directInstall") {
+            initWith(getByName("release"))
+            isDebuggable = false
+            // Preserve the existing testing signer so updates retain device enrollment.
+            // This is a signed testing distribution, not a production signing identity.
+            signingConfig = signingConfigs.getByName("debug")
+            optimization { enable = false }
+            matchingFallbacks += listOf("release")
+        }
         release {
             optimization {
                 enable = true
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
             }
         }
+    }
+    splits {
+        abi { isEnable = false }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
