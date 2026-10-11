@@ -38,7 +38,8 @@ def main():
     permission_pattern = re.compile(r"uses-permission: name='([^']+)'")
     permissions = permission_pattern.findall(run(args.build_tools / 'aapt.exe', 'dump', 'permissions', args.apk))
     old_permissions = permission_pattern.findall(run(args.build_tools / 'aapt.exe', 'dump', 'permissions', args.previous_apk))
-    assert set(permissions) == set(old_permissions), 'Worker permissions changed'
+    assert set(old_permissions).issubset(permissions), 'Existing worker permission removed'
+    assert set(permissions)-set(old_permissions) <= {'android.permission.FOREGROUND_SERVICE_SPECIAL_USE'}, 'Unexpected permission added'
     assert "name='no.jubapay.payoutworker'" in badging
     assert "sdkVersion:'24'" in badging and "targetSdkVersion:'37'" in badging
     with zipfile.ZipFile(args.apk) as archive:
@@ -56,6 +57,7 @@ def main():
     assert app.get(android + 'allowBackup') == 'false'
     components = [node.get(android + 'name') for node in app]
     assert 'no.jubapay.payoutworker.SmsSessionService' in components
+    assert 'no.jubapay.payoutworker.EvcSessionService' in components
     assert 'no.jubapay.payoutworker.device.EvcAccessibilityService' in components
     assert 'androidx.compose.ui.tooling.PreviewActivity' not in components
     report = dict(apk=str(args.apk.resolve()), sha256=hashlib.sha256(args.apk.read_bytes()).hexdigest(),

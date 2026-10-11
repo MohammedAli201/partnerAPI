@@ -61,6 +61,7 @@ class Settings(BaseSettings):
     api_key_verifier_secret: SecretStr = Field(default=SecretStr(''),alias='API_KEY_VERIFIER_SECRET')
     embedded_payment_workers: bool = Field(default=False,alias='EMBEDDED_PAYMENT_WORKERS')
     phone_worker_enabled: bool = Field(default=False,alias='PHONE_WORKER_ENABLED')
+    phone_evc_payments_enabled: bool = Field(default=False,alias='PHONE_EVC_PAYMENTS_ENABLED')
     phone_ussd_test_enabled: bool = Field(default=False,alias='PHONE_USSD_TEST_ENABLED')
     phone_sms_test_enabled: bool = Field(default=False,alias='PHONE_SMS_TEST_ENABLED')
     sms_payout_test_enabled: bool = Field(default=False,alias='SMS_PAYOUT_TEST_ENABLED')

@@ -114,7 +114,7 @@ class Binding(Model):
 class Heartbeat(Model):
     state: str = Field(max_length=64)
     app_version: str = Field(max_length=64)
-    flow_version: Literal['sim-v1']
+    flow_version: Literal['sim-v1','evc-712-v1']
 
 
 class Claim(Model):
@@ -133,6 +133,11 @@ class Evidence(Model):
     payload_hash: str | None = Field(default=None, max_length=64)
     amount_minor: StrictInt | None = None
     currency: str | None = Field(default=None, max_length=3)
+    carrier_response: str | None = Field(default=None, max_length=4096)
+
+
+class EvcConfigure(Model):
+    sim_subscription_id: StrictInt = Field(ge=0)
 
 
 class Event(Binding):
@@ -167,7 +172,7 @@ def device_info(db, device_id):
     # continues to authenticate for diagnostics and historical event uploads.
     if not d or not d['enabled']:
         c.fail(403, 'Simulator worker/device unavailable')
-    return d, dict(id=d['worker_id'], simulator=d['simulator'])
+    return d, dict(id=d['worker_id'], simulator=d['simulator'],enabled=d['worker_enabled'])
 
 
 def issue(db, device):
@@ -177,9 +182,11 @@ def issue(db, device):
         access_expires_at=:expires,refresh_expires_at=:refresh_expires WHERE device_id=:id''',
         id=device['id'], access=token_hash(access), refresh=token_hash(refresh), expires=expires,
         refresh_expires=now() + timedelta(hours=24))
-    return dict(access_token=access, refresh_token=refresh, expires_at=millis(expires),
-                config=dict(device_id=str(device['id']), provider_id='simulator',
-                            payout_account_id=str(device['wallet_id']), sim_subscription_id=-1, simulation=True))
+    cfg=dict(device_id=str(device['id']),provider_id='simulator',payout_account_id=str(device['wallet_id']),sim_subscription_id=-1,simulation=True)
+    if not device['simulator'] and device['network'].lower()=='evc':
+        from phone_evc import config
+        cfg=config(db,device)
+    return dict(access_token=access,refresh_token=refresh,expires_at=millis(expires),config=cfg)
 
 
 def enrollment_code(db, device_id, actor):
@@ -275,6 +282,9 @@ def receive_event(db, event, credential, worker):
         c.fail(409, 'ILLEGAL_TRANSITION')
     if event.phase == 'SUBMISSION_POSSIBLE' and not assignment['authorization_id']:
         c.fail(409, 'NO_AUTHORIZATION')
+    if job['provider_id']=='evc-plus':
+        from phone_evc import receive
+        return receive(db,event,credential,worker,assignment,job,hashed)
     attempt, payout, queue = w.owned(db, worker, event.attempt_id, event.assignment_version, False)
     terminal = event.phase in {'CONFIRMED_SUCCESS', 'CONFIRMED_NOT_PAID'}
     if terminal:
@@ -370,7 +380,15 @@ def make_router(get_db, require_role):
     @router.post('/v1/claim')
     def claim(body: Claim, identity=Depends(phone), db=Depends(get_db)):
         # Immediate polling is valid under the Android contract; no sleeping with DB locks held.
-        c.fail(503, 'Simulated assignments retired; use the real SIM diagnostic instruction endpoint')
+        if option('PHONE_EVC_PAYMENTS_ENABLED','phone_evc_payments_enabled'):
+            from phone_evc import claim as real_claim
+            return transaction(db,real_claim,identity)
+        c.fail(503, 'Simulated assignments retired; real EVC execution is disabled')
+
+    @router.post('/v1/evc/configure')
+    def evc_configure(body: EvcConfigure, identity=Depends(phone),db=Depends(get_db)):
+        from phone_evc import configure
+        return transaction(db,configure,identity[1],identity[2],body.sim_subscription_id)
 
     @router.post('/v1/assignment/ack')
     def ack(body: Binding, identity=Depends(phone), db=Depends(get_db)):
@@ -383,6 +401,9 @@ def make_router(get_db, require_role):
 
     @router.post('/v1/authorize')
     def authorize(body: Binding, identity=Depends(phone), db=Depends(get_db)):
+        if option('PHONE_EVC_PAYMENTS_ENABLED','phone_evc_payments_enabled'):
+            from phone_evc import authorize as real_authorize
+            return transaction(db,real_authorize,body,identity)
         c.fail(503, 'Legacy simulated execution retired; use real SIM diagnostics')
 
     @router.post('/v1/events')

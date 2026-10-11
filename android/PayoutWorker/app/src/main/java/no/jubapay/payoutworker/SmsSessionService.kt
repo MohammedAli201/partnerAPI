@@ -42,6 +42,7 @@ class SmsResumeReceiver:BroadcastReceiver() {
  override fun onReceive(context:Context,intent:Intent) {
   if(intent.action !in setOf(Intent.ACTION_BOOT_COMPLETED,Intent.ACTION_MY_PACKAGE_REPLACED))return
   val g=(context.applicationContext as WorkerApplication).graph
+  g.startAutomaticEvc(context)
   if(g.sms.enabled()&&g.backend.enrolled()&&context.checkSelfPermission(Manifest.permission.SEND_SMS)==PackageManager.PERMISSION_GRANTED) {
    try{ContextCompat.startForegroundService(context,Intent(context,SmsSessionService::class.java))}
    catch(_:Exception){g.sms.status.value="Resume the automatic SMS worker from the app"}

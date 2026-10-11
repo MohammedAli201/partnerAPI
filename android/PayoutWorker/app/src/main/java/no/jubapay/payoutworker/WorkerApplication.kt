@@ -23,11 +23,20 @@ class AppGraph(app: Application) {
  val backend=HttpBackend(vault,DeviceKey(),BuildConfig.DEBUG)
  val sms=SmsQueueWorker(app,backend,vault)
  val readiness=AndroidReadiness(app,backend::enrolled)
- val engine=WorkerEngine(store,backend,ReportingOnlyProvider(),readiness,backend::config)
+ val providerPin=LocalProviderPin(vault)
+ val engine=WorkerEngine(store,backend,Evc712Provider(RuntimeEvcSession,providerPin),
+  Readiness{readiness.checks()+RuntimeEvcSession.setupChecks(app)},backend::config)
  val sessionRunning=MutableStateFlow(false)
  val status=MutableStateFlow("Enroll this device to begin")
  private val scope=CoroutineScope(SupervisorJob()+Dispatchers.IO)
  val recovered=scope.async {engine.recover()}
+ fun startAutomaticEvc(context:android.content.Context) {
+  if(!backend.enrolled()||!providerPin.configured()||vault.get("evc-auto-enabled")=="false")return
+  if(context.checkSelfPermission(android.Manifest.permission.CALL_PHONE)!=android.content.pm.PackageManager.PERMISSION_GRANTED||
+   context.checkSelfPermission(android.Manifest.permission.READ_PHONE_STATE)!=android.content.pm.PackageManager.PERMISSION_GRANTED)return
+  try {androidx.core.content.ContextCompat.startForegroundService(context,android.content.Intent(context,EvcSessionService::class.java))}
+  catch(_:Exception){status.value="Open the app to resume the automatic EVC worker"}
+ }
  init {
   val work=PeriodicWorkRequestBuilder<OutboxUploadWorker>(15,TimeUnit.MINUTES)
    .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())

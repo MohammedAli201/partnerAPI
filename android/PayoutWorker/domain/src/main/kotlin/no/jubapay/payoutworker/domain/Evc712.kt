@@ -34,7 +34,7 @@ class Evc712Parser(private val observedSuccessTemplates: List<String> = emptyLis
         val normalized = normalize(text)
         if (normalized.trimEnd('.') == "Haraaga xisaabtaadu kuguma filna") {
             return Evidence(ResultKind.NOT_PAID_CONFIRMED,"InsufficientBalance",payloadHash=job.payloadHash,
-                amountMinor=job.amountMinor,currency=job.currency)
+                amountMinor=job.amountMinor,currency=job.currency,carrierResponse=normalized)
         }
         // Grammar supplied by the operator screenshot; the screenshot itself is never payment evidence.
         val receipt = carrierSuccess.matchEntire(normalized)
@@ -44,7 +44,7 @@ class Evc712Parser(private val observedSuccessTemplates: List<String> = emptyLis
                 return Evidence(ResultKind.UNKNOWN,"RecipientOrAmountMismatch")
             // This response has no carrier-issued transaction reference. Do not invent one.
             return Evidence(ResultKind.SUCCESS_CONFIRMED,"EvcSuccess",payloadHash=job.payloadHash,
-                amountMinor=job.amountMinor,currency=job.currency)
+                amountMinor=job.amountMinor,currency=job.currency,carrierResponse=normalized)
         }
         for (template in observedSuccessTemplates) {
             if (job.recipientName != null) continue // Legacy templates cannot verify a named beneficiary.

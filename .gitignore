@@ -50,3 +50,6 @@ local.properties
 *.aab
 *.jks
 *.keystore
+
+# Private single-device provisioning capability
+.evc-phone-provisioning.json

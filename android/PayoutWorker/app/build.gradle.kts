@@ -13,8 +13,8 @@ android {
         applicationId = "no.jubapay.payoutworker"
         minSdk = 24
         targetSdk = 37
-        versionCode = 2
-        versionName = "1.1"
+        versionCode = 3
+        versionName = "1.2"
         buildConfigField("String", "PROVISIONED_BACKEND", "\"${providers.environmentVariable("PAYOUT_BACKEND_URL").getOrElse("")}\"")
         buildConfigField("String", "PROVISIONED_ENROLLMENT", "\"${providers.environmentVariable("PAYOUT_ENROLLMENT_CODE").getOrElse("")}\"")
 

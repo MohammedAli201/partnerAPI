@@ -76,6 +76,8 @@ class WorkerEngine(private val store: AttemptStore, private val backend: Backend
    if(paused||draining||readiness.checks().any { !it.ready } || provider.readiness(job).any { !it.ready }) throw WorkerFailure.NotReady()
    val controlNow=backend.heartbeat(DeviceState.BUSY)
    if(controlNow.paused||controlNow.drain||controlNow.revoked) throw WorkerFailure.NotReady()
+   // Server authorization must see the durable PREPARING event before arming.
+   flush()
    val auth=backend.authorize(job)
    if(paused||draining||auth.attemptId!=job.attemptId||auth.payloadHash!=job.payloadHash||
     clock.now()+1_000>=auth.expiresAt||clock.now()+1_000>=job.executionExpiresAt) throw WorkerFailure.Protocol("AUTHORIZATION_INVALID")

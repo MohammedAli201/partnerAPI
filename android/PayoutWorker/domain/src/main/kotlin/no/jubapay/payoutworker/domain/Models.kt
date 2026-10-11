@@ -21,7 +21,7 @@ enum class Phase {
 }
 enum class ResultKind { SUCCESS_CONFIRMED, NOT_PAID_CONFIRMED, UNKNOWN }
 enum class DeviceState { AVAILABLE, BUSY, PAUSED, DEGRADED, QUARANTINED, OFFLINE }
-enum class Scenario { SUCCESS, REJECTION, DELAYED, UNKNOWN, NETWORK_BEFORE, NETWORK_AFTER, UNEXPECTED_MENU, DISABLED_ACCESSIBILITY }
+enum class Scenario { REAL, SUCCESS, REJECTION, DELAYED, UNKNOWN, NETWORK_BEFORE, NETWORK_AFTER, UNEXPECTED_MENU, DISABLED_ACCESSIBILITY }
 data class Assignment(
  val payoutId: String, val attemptId: String, val deviceId: String, val assignmentVersion: Long,
  val providerId: String, val accountId: String, val simSubscriptionId: Int,
@@ -54,7 +54,8 @@ data class Assignment(
 data class DeviceConfig(val deviceId: String, val providerId: String, val accountId: String, val simSubscriptionId: Int, val simulation: Boolean = true)
 data class Authorization(val id: String, val attemptId: String, val payloadHash: String, val expiresAt: Long)
 data class Evidence(val kind: ResultKind, val code: String, val reference: String? = null,
- val payloadHash: String? = null, val amountMinor: Long? = null, val currency: String? = null)
+ val payloadHash: String? = null, val amountMinor: Long? = null, val currency: String? = null,
+ val carrierResponse: String? = null)
 data class Attempt(val assignment: Assignment, val phase: Phase, val sequence: Long, val updatedAt: Long,
  val authorizationId: String? = null, val submissionAt: Long? = null, val evidence: Evidence? = null,
  val resultAcknowledged: Boolean = false)

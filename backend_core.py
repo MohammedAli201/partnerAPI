@@ -122,15 +122,31 @@ def immutable(payload,reference):
     from payout_webhooks import payout_channel
     if os.getenv('SMS_PAYOUT_TEST_ENABLED') == 'true' and os.getenv('ENVIRONMENT') != 'production' and payload.provider.strip().lower() == 'evc':
         data.setdefault('payout_channel', 'evc')
-    return dict(version=1,reference=reference.rsplit('_',1)[-1].lower(),amount_minor=minor(payload.amount,payload.currency.upper()),
+    real_evc=os.getenv('PHONE_EVC_PAYMENTS_ENABLED')=='true' and payload.provider.strip().lower() in {'evc','hormuud'}
+    instruction=None
+    if real_evc:
+        if os.getenv('SMS_PAYOUT_TEST_ENABLED')=='true':
+            fail(503,'Choose real EVC or SMS payout mode, not both')
+        from evc_instructions import transfer_instruction
+        instruction=transfer_instruction(payload)
+        data.setdefault('payout_channel','evc')
+    result=dict(version=2 if real_evc else 1,reference=reference.rsplit('_',1)[-1].lower(),amount_minor=minor(payload.amount,payload.currency.upper()),
         currency=payload.currency.strip().upper(),recipient=payload.recipient.strip(),provider=payload.provider.strip().lower(),
         network=payout_channel(data).strip().lower(),corridor=str(data.get('corridor','SO')).strip().upper())
+    if real_evc:
+        if result['network']!='evc':
+            fail(422,'EVC payment requires the evc channel')
+        result['recipient_name']=instruction['recipient_name']
+    return result
 
 def stored_instructions(p):
     from payout_webhooks import payout_channel
     metadata=json.loads(p['request_payload'] or '{}')
-    return dict(version=1,reference=p['partner_tx_id'].rsplit('_',1)[-1].lower(),amount_minor=minor(p['amount'],p['currency'].upper()),currency=p['currency'].upper(),
+    result=dict(version=2 if metadata.get('evc_auto_payment') else 1,reference=p['partner_tx_id'].rsplit('_',1)[-1].lower(),amount_minor=minor(p['amount'],p['currency'].upper()),currency=p['currency'].upper(),
         recipient=p['recipient'].strip(),provider=p['provider'].strip().lower(),network=payout_channel(metadata).strip().lower(),corridor=str(metadata.get('corridor','SO')).strip().upper())
+    if metadata.get('evc_auto_payment'):
+        result['recipient_name']=metadata['evc_recipient_name']
+    return result
 
 def admission(db,partner,payload,reference,key,fee):
     try:
@@ -165,6 +181,10 @@ def admission(db,partner,payload,reference,key,fee):
         if instructions['currency']!=p['funding_currency']:
             fail(422,'Payout currency must match partner funding; no implicit FX')
         metadata=dict(payload.request_payload)
+        metadata.pop('evc_auto_payment',None)
+        metadata.pop('evc_recipient_name',None)
+        if instructions['version']==2:
+            metadata.update(evc_auto_payment=True,evc_recipient_name=instructions['recipient_name'])
         metadata.pop('sms_test_accounting', None)
         metadata.pop('sms_test_placeholder_callback', None)
         if os.getenv('SMS_PAYOUT_TEST_ENABLED') == 'true' and os.getenv('SMS_PAYOUT_TEST_ACCOUNTING') == 'true' and os.getenv('ENVIRONMENT') != 'production':
@@ -173,7 +193,7 @@ def admission(db,partner,payload,reference,key,fee):
         endpoint=row(db,'SELECT * FROM webhook_endpoints WHERE partner_id=:id AND enabled',id=partner)
         requested=metadata.pop('callback_url',None)
         placeholder = (requested == 'https://partner.example.com/webhooks/payout-status' and
-                       os.getenv('SMS_PAYOUT_TEST_ENABLED') == 'true' and
+                       (os.getenv('SMS_PAYOUT_TEST_ENABLED') == 'true' or instructions['version']==2) and
                        os.getenv('ENVIRONMENT') == 'development')
         if placeholder:
             metadata['callback_url'] = requested
@@ -213,7 +233,7 @@ def admission(db,partner,payload,reference,key,fee):
           payout=pid,partner=partner,currency=instructions['currency'],fee=fee_minor,
           policy=os.getenv('FEE_POLICY_VERSION') or get_settings().fee_policy_version,
           components=canonical(dict(type='fixed',amount_minor=fee_minor)),
-          activity='live' if os.getenv('ENVIRONMENT')=='production' else 'simulation',accepted=inserted['created_at'])
+          activity='live' if instructions['version']==2 or os.getenv('ENVIRONMENT')=='production' else 'simulation',accepted=inserted['created_at'])
         run(db,"INSERT INTO payout_queue(payout_id,status,created_at) VALUES(:id,'PENDING',now())",id=pid)
         run(db,"INSERT INTO payout_history VALUES(:id,:payout,1,NULL,'RECEIVED',:actor,'ADMITTED',now())",id=uuid4(),payout=pid,actor=f'partner:{partner}')
         response=dict(id=str(pid),partner_tx_id=reference,status='RECEIVED',created_at=inserted['created_at'].isoformat(),duplicate=False,

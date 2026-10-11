@@ -53,9 +53,10 @@ class EvcAccessibilityService:AccessibilityService() {
     private val parser=Evc712Parser()
 
     override fun onServiceConnected(){instance=this}
-    override fun onDestroy(){active?.let{UssdDeviceLease.release(it.token)};active=null;instance=null;super.onDestroy()}
-    override fun onInterrupt(){active?.let{screens.tryEmit(UssdScreen(it.token,-1,"",false))}}
+    override fun onDestroy(){RuntimeEvcSession.disconnected();active?.let{UssdDeviceLease.release(it.token)};active=null;instance=null;super.onDestroy()}
+    override fun onInterrupt(){RuntimeEvcSession.disconnected();active?.let{screens.tryEmit(UssdScreen(it.token,-1,"",false))}}
     override fun onAccessibilityEvent(event:AccessibilityEvent?) {
+        RuntimeEvcSession.onEvent(this)
         val current=active?:return
         // Do not inspect event.text: it can contain the provider PIN after ACTION_SET_TEXT.
         val snapshot=snapshot(current) ?: if(current.submitted.get())UssdScreen(current.token,-1,"",false) else return

@@ -1,4 +1,4 @@
-"""Safe device contract on the EXISTING payout/queue tables. Simulator only."""
+"""Durable device execution contract on the existing payout and queue tables."""
 import hashlib
 import hmac
 import os
@@ -16,22 +16,24 @@ def authenticate(db,token):
     return worker
 
 
-def gates(db,p,device,wallet):
+def gates(db,p,device,wallet,evc=False,float_known=True):
     partner=c.row(db,'SELECT * FROM partners WHERE id=:id',id=p['partner_id'])
     if not partner['is_active'] or partner['paused'] or not partner['ledger_enabled']:
         c.fail(409,'Partner not eligible')
     if not device['enabled'] or device['quarantined'] or not wallet['enabled'] or wallet['currency']!=p['currency']:
         c.fail(409,'Device/wallet unavailable')
-    if device['provider'].lower()!=p['provider'].lower() or device['network'].lower()!=c.stored_instructions(p)['network']:
+    provider_matches=(device['provider'].lower()==p['provider'].lower() or
+                      (evc and {device['provider'].lower(),p['provider'].lower()} <= {'evc','hormuud'}))
+    if not provider_matches or device['network'].lower()!=c.stored_instructions(p)['network']:
         c.fail(409,'Device network/provider mismatch')
     for scope,identity in [('global','all'),('network',device['network']),('wallet',str(wallet['id']))]:
         if c.row(db,'SELECT 1 FROM payment_controls WHERE scope=:scope AND identity=:identity AND paused',scope=scope,identity=identity):
             c.fail(409,'Execution paused')
-    if (datetime.now(timezone.utc)-wallet['observed_at']).total_seconds()>3600:
+    if float_known and (datetime.now(timezone.utc)-wallet['observed_at']).total_seconds()>3600:
         c.fail(409,'Float observation stale')
 
 
-def claim(db,worker,device_id):
+def claim(db,worker,device_id,evc=False):
     c.lock(db)
     device=c.row(db,'SELECT * FROM payout_devices WHERE id=:id AND worker_id=:worker FOR UPDATE',id=device_id,worker=worker['id'])
     if not device:
@@ -39,26 +41,33 @@ def claim(db,worker,device_id):
     if c.row(db,'SELECT 1 FROM payout_attempts WHERE resolved_at IS NULL AND execution_closed_at IS NULL AND (device_id=:device OR wallet_id=:wallet)',device=device_id,wallet=device['wallet_id']):
         return None
     wallet=c.row(db,'SELECT * FROM payout_wallets WHERE id=:id FOR UPDATE',id=device['wallet_id'])
+    settings=c.row(db,'SELECT * FROM phone_evc_settings WHERE device_id=:id',id=device_id) if evc else None
+    if evc and (worker['simulator'] or not settings or not settings['enabled']):
+        c.fail(409,'Real EVC phone is not configured')
+    float_known=not evc or settings['float_known']
     if device['quarantined']:
         c.fail(409,'Device quarantined')
     job=c.row(db,'''SELECT q.* FROM payout_queue q JOIN payouts p ON p.id=q.payout_id JOIN partners partner ON partner.id=p.partner_id
         LEFT JOIN (SELECT old.partner_id,max(a.created_at) AS last_dispatch FROM payout_attempts a JOIN payouts old ON old.id=a.payout_id GROUP BY old.partner_id) dispatch ON dispatch.partner_id=p.partner_id
         WHERE q.status='PENDING' AND q.available_at<=now() AND p.status='RECEIVED' AND partner.ledger_enabled AND partner.is_active AND NOT partner.paused
-        AND p.currency=:currency AND lower(p.provider)=lower(:provider)
+        AND p.currency=:currency AND (lower(p.provider)=lower(:provider) OR
+            (:evc AND lower(p.provider) IN ('evc','hormuud')))
+        AND COALESCE(p.request_payload::jsonb->>'evc_auto_payment'='true',false)=:evc
         AND CASE WHEN p.canonical_hash IS NOT NULL THEN lower(p.request_payload::jsonb->>'payout_channel')=:network ELSE false END
         ORDER BY dispatch.last_dispatch ASC NULLS FIRST,q.created_at
-        FOR UPDATE OF q SKIP LOCKED LIMIT 1''',currency=wallet['currency'],provider=device['provider'],network=device['network'].lower())
+        FOR UPDATE OF q SKIP LOCKED LIMIT 1''',currency=wallet['currency'],provider=device['provider'],network=device['network'].lower(),evc=evc)
     if not job:
         return None
     p=c.row(db,'SELECT * FROM payouts WHERE id=:id FOR UPDATE',id=job['payout_id'])
-    gates(db,p,device,wallet)
+    gates(db,p,device,wallet,evc=evc,float_known=float_known)
     if job['dispatch_count']>=5:
         c.run(db,"UPDATE payout_queue SET status='HELD' WHERE payout_id=:id",id=p['id'])
         c.audit(db,worker['id'],'RETRY_LIMIT_HOLD',p['id'])
         return None
     n=c.minor(p['amount'],p['currency'])
-    asset=c.row(db,'UPDATE ledger_accounts SET reserved_minor=reserved_minor+:n WHERE id=:id AND balance_minor-reserved_minor>=:n RETURNING *',id=wallet['account_id'],n=n)
-    if not asset or wallet['observed_minor']<asset['reserved_minor']:
+    # Unknown physical float is never replaced with fabricated wallet funding.
+    asset=c.row(db,'UPDATE ledger_accounts SET reserved_minor=reserved_minor+:n WHERE id=:id AND (:unknown OR balance_minor-reserved_minor>=:n) RETURNING *',id=wallet['account_id'],n=n,unknown=not float_known)
+    if not asset or (float_known and wallet['observed_minor']<asset['reserved_minor']):
         c.fail(402,'Wallet float insufficient')
     job=c.row(db,"UPDATE payout_queue SET status='IN_PROGRESS',worker_id=:worker,lease_until=now()+interval '120 seconds',generation=generation+1,dispatch_count=dispatch_count+1 WHERE payout_id=:id RETURNING *",id=p['id'],worker=str(worker['id']))
     aid=uuid4()
@@ -83,7 +92,7 @@ def owned(db,worker,aid,generation,live=True):
     return a,p,job
 
 
-def arm(db,worker,aid,generation,hashed):
+def arm(db,worker,aid,generation,hashed,evc=False):
     a,p,job=owned(db,worker,aid,generation)
     if hashed!=a['instruction_hash']:
         c.fail(409,'Instructions changed')
@@ -93,11 +102,15 @@ def arm(db,worker,aid,generation,hashed):
         c.fail(409,'Cannot arm attempt')
     device=c.row(db,'SELECT * FROM payout_devices WHERE id=:id',id=a['device_id'])
     wallet=c.row(db,'SELECT * FROM payout_wallets WHERE id=:id',id=a['wallet_id'])
-    gates(db,p,device,wallet)
+    settings=c.row(db,'SELECT * FROM phone_evc_settings WHERE device_id=:id',id=device['id']) if evc else None
+    if evc and (worker['simulator'] or not settings or not settings['enabled']):
+        c.fail(409,'Real EVC phone is not configured')
+    float_known=not evc or settings['float_known']
+    gates(db,p,device,wallet,evc=evc,float_known=float_known)
     if not c.row(db,"SELECT 1 FROM payout_reservations WHERE payout_id=:id AND status='ACTIVE'",id=p['id']) or not c.row(db,"SELECT 1 FROM wallet_reservations WHERE attempt_id=:id AND state='ACTIVE'",id=aid):
         c.fail(409,'Required reservations missing')
     asset=c.row(db,'SELECT * FROM ledger_accounts WHERE id=:id',id=wallet['account_id'])
-    if asset['balance_minor']<asset['reserved_minor'] or wallet['observed_minor']<asset['reserved_minor']:
+    if float_known and (asset['balance_minor']<asset['reserved_minor'] or wallet['observed_minor']<asset['reserved_minor']):
         c.fail(402,'Wallet float no longer sufficient')
     c.run(db,"UPDATE payout_attempts SET phase='ARMED',armed_at=now() WHERE id=:id",id=aid)
     c.audit(db,worker['id'],'ARM_DURABLE',aid)

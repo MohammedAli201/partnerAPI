@@ -18,9 +18,9 @@ object Wire {
   put("execution_expires_at",a.executionExpiresAt);put("correlation_id",a.correlationId);put("scenario",a.scenario.name)
   if(a.recipientName!=null)put("recipient_name",a.recipientName)
  }
- fun evidence(e: Evidence)=JSONObject().apply { put("kind",e.kind.name);put("code",e.code);put("reference",e.reference);put("payload_hash",e.payloadHash);put("amount_minor",e.amountMinor);put("currency",e.currency) }
+ fun evidence(e: Evidence)=JSONObject().apply { put("kind",e.kind.name);put("code",e.code);put("reference",e.reference);put("payload_hash",e.payloadHash);put("amount_minor",e.amountMinor);put("currency",e.currency);put("carrier_response",e.carrierResponse) }
  fun evidence(j: JSONObject)=Evidence(ResultKind.valueOf(j.getString("kind")),j.getString("code"),j.optString("reference").ifBlank{null},
-  j.optString("payload_hash").ifBlank{null},if(j.has("amount_minor"))j.exactLong("amount_minor")else null,j.optString("currency").ifBlank{null})
+  j.optString("payload_hash").ifBlank{null},if(j.has("amount_minor"))j.exactLong("amount_minor")else null,j.optString("currency").ifBlank{null},j.optString("carrier_response").ifBlank{null})
  fun event(e: Event)=JSONObject().apply {put("event_id",e.eventId);put("payout_id",e.payoutId);put("attempt_id",e.attemptId);put("assignment_version",e.assignmentVersion)
   put("sequence",e.sequence);put("phase",e.phase.name);put("at",e.at);put("payload_hash",e.payloadHash);put("schema_version",e.schemaVersion);put("evidence",e.evidence?.let(::evidence))}
  fun event(j: JSONObject)=Event(j.getString("event_id"),j.getString("payout_id"),j.getString("attempt_id"),j.exactLong("assignment_version"),j.exactLong("sequence"),

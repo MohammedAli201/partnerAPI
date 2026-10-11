@@ -38,7 +38,8 @@ class HttpBackend(private val vault: Vault, private val key: DeviceKey,private v
   require(!enrolled()) {"ALREADY_ENROLLED"}
   val base=checkedUrl(url)
   val result=request(base,"/v1/enroll",JSONObject().put("code",code).put("public_key",key.publicKey()).put("signature",key.sign("enroll:$code")),null)
-  check(Wire.config(result.getJSONObject("config")).simulation) {"REAL_EXECUTION_DISABLED"}
+  val cfg=Wire.config(result.getJSONObject("config"))
+  check(cfg.simulation || cfg.providerId=="evc-plus") {"UNSUPPORTED_PROVIDER"}
   vault.put("backend",base);vault.put("credentials",result.toString())
  }
  private suspend fun credentials(): JSONObject=renewal.withLock {
@@ -63,7 +64,11 @@ class HttpBackend(private val vault: Vault, private val key: DeviceKey,private v
    JSONObject(source.readUtf8())
   }
  }
- override suspend fun heartbeat(state: DeviceState): Control {val j=call("/v1/heartbeat",JSONObject().put("state",state.name).put("app_version","1.0").put("flow_version","sim-v1"));return Control(j.getBoolean("paused"),j.getBoolean("drain"),j.getBoolean("revoked"))}
+ suspend fun configureEvc(subscription:Int) {
+  val result=call("/v1/evc/configure",JSONObject().put("sim_subscription_id",subscription))
+  renewal.withLock {val saved=JSONObject(vault.get("credentials")?:throw WorkerFailure.Authentication());saved.put("config",result.getJSONObject("config"));vault.put("credentials",saved.toString())}
+ }
+ override suspend fun heartbeat(state: DeviceState): Control {val j=call("/v1/heartbeat",JSONObject().put("state",state.name).put("app_version","1.2").put("flow_version",if(config().simulation)"sim-v1"else"evc-712-v1"));return Control(j.getBoolean("paused"),j.getBoolean("drain"),j.getBoolean("revoked"))}
  override suspend fun claim(): Assignment?=call("/v1/claim",JSONObject().put("wait_seconds",20)).optJSONObject("assignment")?.let(Wire::assignment)
  override suspend fun acknowledgeAssignment(job: Assignment) {call("/v1/assignment/ack",binding(job))}
  override suspend fun authorize(job: Assignment): Authorization {val j=call("/v1/authorize",binding(job));return Authorization(j.getString("authorization_id"),j.getString("attempt_id"),j.getString("payload_hash"),j.getLong("expires_at"))}
