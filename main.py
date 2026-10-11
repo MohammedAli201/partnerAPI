@@ -381,6 +381,18 @@ def create_payout(request: Request,payload: PayoutCreate,partner: Partner=Depend
         raise
 
 
+@app.post('/payouts/prepare-ussd')
+def prepare_ussd(payload: PayoutCreate, partner: Partner=Depends(get_partner_from_api_key)):
+    """Validate the actual transaction fields; no payout, reservation or modem call."""
+    if payload.amount > settings.max_amount:
+        raise HTTPException(422, 'Amount exceeds configured payout limit')
+    from evc_instructions import transfer_instruction
+    try:
+        return transfer_instruction(payload)
+    except ValueError as error:
+        raise HTTPException(422, str(error)) from None
+
+
 
 @app.get("/payouts/{payout_id}")
 def get_payout(

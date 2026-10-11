@@ -68,7 +68,7 @@ def install(app,settings,session_factory):
             # Partner admission exclusively authenticates X-API-Key; it never
             # accepts browser cookies as credentials. A stale client cookie
             # must not turn this API request into browser-session authentication.
-            partner_api = request.method == 'POST' and request.url.path == '/payouts-create'
+            partner_api = request.method == 'POST' and request.url.path in {'/payouts-create', '/payouts/prepare-ussd'}
             if token and request.url.path!='/login' and not partner_api:
                 csrf=request.headers.get('x-csrf-token')
                 if not csrf:

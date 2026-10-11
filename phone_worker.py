@@ -47,11 +47,14 @@ def token_hash(value):
 
 def payload_hash(job):
     # Exact Android Assignment.immutableHash(): byte lengths, fixed field order.
-    fields = ['1'] + [str(job[key]) for key in (
+    name = job.get('recipient_name')
+    fields = ['1' if name is None else '2'] + [str(job[key]) for key in (
         'payout_id', 'attempt_id', 'device_id', 'assignment_version', 'provider_id',
         'payout_account_id', 'sim_subscription_id', 'recipient', 'recipient_type',
         'amount_minor', 'currency', 'flow_version', 'claim_expires_at',
         'execution_expires_at', 'correlation_id', 'scenario')]
+    if name is not None:
+        fields.append(name)
     return token_hash(''.join(f'{len(value.encode())}:{value}' for value in fields))
 
 

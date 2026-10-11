@@ -10,21 +10,23 @@ class Evc712Parser(private val observedSuccessTemplates: List<String> = emptyLis
     fun validate(job: Assignment) {
         require(job.providerId == "evc-plus" && job.flowVersion == "evc-712-v1")
         require(job.currency == "USD" && job.amountMinor in 1..10_000_000_000L)
-        // No implicit +252 stripping: the canonical backend number must equal the operator prompt.
-        require(job.recipient.matches(Regex("[0-9]{7,15}")))
+        // Preserve the canonical number in the assignment; normalize only at the carrier boundary.
+        carrierNumber(job.recipient)
         require(job.payloadHash == job.immutableHash())
     }
 
     fun command(job: Assignment): String {
         validate(job)
-        return "*712*${job.recipient}*${amount(job.amountMinor)}#"
+        return "*712*${carrierNumber(job.recipient)}*${amount(job.amountMinor)}#"
     }
 
     fun verifyPrompt(job: Assignment, text: String): Prompt {
         if(text.length>4096)return Prompt.UNRECOGNIZED
         val match = prompt.matchEntire(normalize(text)) ?: return Prompt.UNRECOGNIZED
         val minor = minor(match.groupValues[1]) ?: return Prompt.UNRECOGNIZED
-        return if (minor == job.amountMinor && match.groupValues[2] == job.recipient) Prompt.MATCH else Prompt.MISMATCH
+        val displayedName = normalize(text).substringAfter(" ").substringAfter(" ").substringBefore(" (")
+        return if (minor == job.amountMinor && match.groupValues[2] == carrierNumber(job.recipient) &&
+            (job.recipientName == null || sameName(job.recipientName, displayedName))) Prompt.MATCH else Prompt.MISMATCH
     }
 
     fun finalResult(job: Assignment, text: String): Evidence {
@@ -34,11 +36,21 @@ class Evc712Parser(private val observedSuccessTemplates: List<String> = emptyLis
             return Evidence(ResultKind.NOT_PAID_CONFIRMED,"InsufficientBalance",payloadHash=job.payloadHash,
                 amountMinor=job.amountMinor,currency=job.currency)
         }
-        // No production success example has been supplied. Empty configuration NEVER succeeds.
+        // Grammar supplied by the operator screenshot; the screenshot itself is never payment evidence.
+        val receipt = carrierSuccess.matchEntire(normalized)
+        if (receipt != null) {
+            if (job.recipientName == null || !sameName(job.recipientName, receipt.groupValues[2]) ||
+                receipt.groupValues[3] != carrierNumber(job.recipient) || minor(receipt.groupValues[1]) != job.amountMinor)
+                return Evidence(ResultKind.UNKNOWN,"RecipientOrAmountMismatch")
+            // This response has no carrier-issued transaction reference. Do not invent one.
+            return Evidence(ResultKind.SUCCESS_CONFIRMED,"EvcSuccess",payloadHash=job.payloadHash,
+                amountMinor=job.amountMinor,currency=job.currency)
+        }
         for (template in observedSuccessTemplates) {
+            if (job.recipientName != null) continue // Legacy templates cannot verify a named beneficiary.
             val pattern = successPattern(template) ?: continue
             val result = pattern.matchEntire(normalized) ?: continue
-            if (result.groups["recipient"]?.value != job.recipient || minor(result.groups["amount"]!!.value) != job.amountMinor) continue
+            if (result.groups["recipient"]?.value != carrierNumber(job.recipient) || minor(result.groups["amount"]!!.value) != job.amountMinor) continue
             return Evidence(ResultKind.SUCCESS_CONFIRMED,"EvcSuccess",if(template.contains("{reference}"))result.groups["reference"]?.value else null,
                 job.payloadHash,job.amountMinor,job.currency)
         }
@@ -61,6 +73,13 @@ class Evc712Parser(private val observedSuccessTemplates: List<String> = emptyLis
         return Regex(pattern.toString())
     }
     private fun String.countToken(token:String)=windowed(token.length).count{it==token}
+    private val carrierSuccess = Regex("""^<-EVCPLUS-\s*> \$([0-9]+(?:\.[0-9]{1,2})?) ayaad uwareejisay ([^()]+)\((6[0-9]{8})\), Tar: [0-9]{2}/[0-9]{2}/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}, Haraagaagu waa \$[0-9]+(?:\.[0-9]{1,2})?\.(?: La soo deg App-ka WAAFI http://onelink\.to/waafi)?$""")
+    private fun sameName(expected:String,actual:String)=normalize(expected).equals(normalize(actual),ignoreCase=true)
+    private fun carrierNumber(number:String):String {
+        val local=if(number.startsWith("+252"))number.removePrefix("+252")else number
+        require(local.matches(Regex("6[0-9]{8}"))) {"INVALID_SOMALI_RECIPIENT"}
+        return local
+    }
     private fun normalize(text:String)=text.trim().replace(Regex("\\s+")," ")
     private fun minor(value:String):Long?=try{BigDecimal(value).movePointRight(2).longValueExact()}catch(_:ArithmeticException){null}catch(_:NumberFormatException){null}
     private fun amount(value:Long)=BigDecimal.valueOf(value,2).stripTrailingZeros().toPlainString()

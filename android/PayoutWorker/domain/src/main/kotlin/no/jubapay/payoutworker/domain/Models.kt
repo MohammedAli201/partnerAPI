@@ -27,20 +27,22 @@ data class Assignment(
  val providerId: String, val accountId: String, val simSubscriptionId: Int,
  val recipient: String, val recipientType: String, val amountMinor: Long, val currency: String,
  val payloadHash: String, val flowVersion: String, val claimExpiresAt: Long,
- val executionExpiresAt: Long, val correlationId: String, val scenario: Scenario = Scenario.SUCCESS
+ val executionExpiresAt: Long, val correlationId: String, val scenario: Scenario = Scenario.SUCCESS,
+ val recipientName: String? = null
 ) {
  fun immutableHash(): String {
-  // Versioned, unambiguous UTF-8 length-prefixed fields; matched by mock backend.
-  val fields = listOf("1",payoutId,attemptId,deviceId,assignmentVersion.toString(),providerId,accountId,
+  // Versioned, unambiguous UTF-8 length-prefixed fields; matched by the backend.
+  val fields = listOf(if(recipientName==null)"1"else"2",payoutId,attemptId,deviceId,assignmentVersion.toString(),providerId,accountId,
    simSubscriptionId.toString(),recipient,recipientType,amountMinor.toString(),currency,flowVersion,
-   claimExpiresAt.toString(),executionExpiresAt.toString(),correlationId,scenario.name)
+   claimExpiresAt.toString(),executionExpiresAt.toString(),correlationId,scenario.name) + listOfNotNull(recipientName)
   val bytes=fields.joinToString("") { "${it.toByteArray(Charsets.UTF_8).size}:$it" }.toByteArray(Charsets.UTF_8)
   return MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
  }
  fun validate(config: DeviceConfig, now: Long) {
   require(listOf(payoutId,attemptId,deviceId,accountId,correlationId).all { it.matches(Regex("[A-Za-z0-9_-]{1,100}")) }) { "INVALID_IDENTIFIERS" }
   require(assignmentVersion > 0 && amountMinor in 1..100_000_000_00L && currency == "USD") { "INVALID_MONEY" }
-  require(recipientType == "MSISDN" && recipient.matches(if(providerId=="evc-plus") Regex("[0-9]{7,15}") else Regex("\\+[1-9][0-9]{7,14}"))) { "INVALID_RECIPIENT" }
+  require(recipientType == "MSISDN" && recipient.matches(if(providerId=="evc-plus") Regex("(?:\\+252)?6[0-9]{8}") else Regex("\\+[1-9][0-9]{7,14}"))) { "INVALID_RECIPIENT" }
+  require(recipientName==null || (recipientName.length in 1..120 && recipientName.none {it.code<32})) { "INVALID_RECIPIENT_NAME" }
   require(deviceId == config.deviceId && providerId == config.providerId && accountId == config.accountId && simSubscriptionId == config.simSubscriptionId) { "ASSIGNMENT_BINDING" }
   require((providerId == "simulator" && flowVersion == "sim-v1" && config.simulation) ||
    (providerId == "evc-plus" && flowVersion == "evc-712-v1" && !config.simulation && simSubscriptionId>=0)) { "UNAPPROVED_PROVIDER_FLOW" }

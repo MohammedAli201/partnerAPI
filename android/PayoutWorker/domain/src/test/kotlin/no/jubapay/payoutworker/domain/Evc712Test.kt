@@ -43,6 +43,23 @@ class Evc712Test {
         assertEquals("*712*615738865*1.25#",parser.command(job(125)))
         assertEquals("*712*615738865*0.01#",parser.command(job(1)))
     }
+    @Test fun namedBeneficiaryMustMatchBeforePinAndAfterTransfer() {
+        val draft=job(150).copy(recipient="+252619882929",recipientName="Hassan Adan Shuceyb")
+        val named=draft.copy(payloadHash=draft.immutableHash())
+        val receipt="<-EVCPLUS- > $1.5 ayaad uwareejisay HASSAN ADAN SHUCEYB(619882929), Tar: 07/02/26 15:58:54, Haraagaagu waa $0.22. La soo deg App-ka WAAFI http://onelink.to/waafi"
+        assertEquals("*712*619882929*1.5#",parser.command(named))
+        val confirmation="Uwareeji $1.5 HASSAN ADAN SHUCEYB (619882929), Fadlan..Geli..PIN-kaaga"
+        assertEquals(Evc712Parser.Prompt.MATCH,parser.verifyPrompt(named,confirmation))
+        assertEquals(Evc712Parser.Prompt.MISMATCH,parser.verifyPrompt(named,confirmation.replace("HASSAN","OTHER")))
+        assertEquals(ResultKind.SUCCESS_CONFIRMED,parser.finalResult(named,receipt).kind)
+        assertNull(parser.finalResult(named,receipt).reference)
+        assertEquals(ResultKind.UNKNOWN,parser.finalResult(named,receipt.replace("SHUCEYB","OTHER")).kind)
+        assertEquals(ResultKind.UNKNOWN,parser.finalResult(named,receipt.replace("$1.5","$50")).kind)
+        assertEquals(ResultKind.UNKNOWN,parser.finalResult(named,receipt.replace("619882929","615738865")).kind)
+        assertEquals(ResultKind.UNKNOWN,parser.finalResult(named,receipt+" another transfer succeeded").kind)
+        assertEquals(ResultKind.UNKNOWN,parser.finalResult(job(150),receipt).kind)
+        assertNotEquals(named.payloadHash,named.copy(recipientName="Someone Else").immutableHash())
+    }
     @Test fun promptMustMatchRecipientAndAmountExactly() {
         assertEquals(Evc712Parser.Prompt.MATCH,parser.verifyPrompt(job(),prompt()))
         assertEquals(Evc712Parser.Prompt.MATCH,parser.verifyPrompt(job(),prompt(amount="1.00")))
@@ -52,7 +69,7 @@ class Evc712Test {
     }
     @Test fun unknownMenuAndCurrencyNeverMatch() {
         assertEquals(Evc712Parser.Prompt.UNRECOGNIZED,parser.verifyPrompt(job(),"Enter PIN"))
-        assertEquals(Evc712Parser.Prompt.UNRECOGNIZED,parser.verifyPrompt(job(),prompt().replace('$','€')))
+        assertEquals(Evc712Parser.Prompt.UNRECOGNIZED,parser.verifyPrompt(job(),prompt().replace('$','â‚¬')))
         assertEquals(Evc712Parser.Prompt.UNRECOGNIZED,parser.verifyPrompt(job(),"x".repeat(4097)))
     }
     @Test fun noRealSuccessFormatIsInvented() {
