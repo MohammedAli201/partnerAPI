@@ -120,6 +120,8 @@ def immutable(payload,reference):
     if payload.payout_channel:
         data['payout_channel']=payload.payout_channel
     from payout_webhooks import payout_channel
+    if os.getenv('SMS_PAYOUT_TEST_ENABLED') == 'true' and os.getenv('ENVIRONMENT') != 'production' and payload.provider.strip().lower() == 'evc':
+        data.setdefault('payout_channel', 'evc')
     return dict(version=1,reference=reference.rsplit('_',1)[-1].lower(),amount_minor=minor(payload.amount,payload.currency.upper()),
         currency=payload.currency.strip().upper(),recipient=payload.recipient.strip(),provider=payload.provider.strip().lower(),
         network=payout_channel(data).strip().lower(),corridor=str(data.get('corridor','SO')).strip().upper())
@@ -138,7 +140,9 @@ def admission(db,partner,payload,reference,key,fee):
     hashed=digest(instructions)
     if key is not None and (not isinstance(key,str) or not 1<=len(key)<=128 or key!=key.strip()):
         fail(422,'Invalid Idempotency-Key')
-    if not re.fullmatch(r'\+[1-9][0-9]{7,14}',instructions['recipient']):
+    sms_test_number = (os.getenv('SMS_PAYOUT_TEST_ENABLED') == 'true' and
+                       os.getenv('ENVIRONMENT') != 'production' and instructions['recipient'] == '97368681')
+    if not sms_test_number and not re.fullmatch(r'\+[1-9][0-9]{7,14}',instructions['recipient']):
         fail(422,'E.164 recipient required')
     lock(db)
     p=row(db,'SELECT * FROM partners WHERE id=:id FOR UPDATE',id=partner)
@@ -161,10 +165,20 @@ def admission(db,partner,payload,reference,key,fee):
         if instructions['currency']!=p['funding_currency']:
             fail(422,'Payout currency must match partner funding; no implicit FX')
         metadata=dict(payload.request_payload)
+        metadata.pop('sms_test_accounting', None)
+        metadata.pop('sms_test_placeholder_callback', None)
+        if os.getenv('SMS_PAYOUT_TEST_ENABLED') == 'true' and os.getenv('SMS_PAYOUT_TEST_ACCOUNTING') == 'true' and os.getenv('ENVIRONMENT') != 'production':
+            metadata['sms_test_accounting'] = True
         metadata['payout_channel']=instructions['network']
         endpoint=row(db,'SELECT * FROM webhook_endpoints WHERE partner_id=:id AND enabled',id=partner)
         requested=metadata.pop('callback_url',None)
-        if requested:
+        placeholder = (requested == 'https://partner.example.com/webhooks/payout-status' and
+                       os.getenv('SMS_PAYOUT_TEST_ENABLED') == 'true' and
+                       os.getenv('ENVIRONMENT') == 'development')
+        if placeholder:
+            metadata['callback_url'] = requested
+            metadata['sms_test_placeholder_callback'] = True
+        elif requested:
             from webhook_transport import endpoint_url
             try:
                 normalized=endpoint_url(requested)
@@ -204,6 +218,14 @@ def admission(db,partner,payload,reference,key,fee):
         run(db,"INSERT INTO payout_history VALUES(:id,:payout,1,NULL,'RECEIVED',:actor,'ADMITTED',now())",id=uuid4(),payout=pid,actor=f'partner:{partner}')
         response=dict(id=str(pid),partner_tx_id=reference,status='RECEIVED',created_at=inserted['created_at'].isoformat(),duplicate=False,
             fee=str(Decimal(fee_minor)/100),charged_total=str(Decimal(total)/100),balances=dict(available=str(Decimal(a['balance_minor']-a['reserved_minor']-total)/100),reserved=str(Decimal(a['reserved_minor']+total)/100),total=str(Decimal(a['balance_minor'])/100)))
+        if os.getenv('SMS_PAYOUT_TEST_ENABLED') == 'true':
+            from sms_payout import enqueue_payment
+            response['execution'] = enqueue_payment(db, inserted)
+    if response.get('duplicate'):
+        from sms_payout import payment_execution
+        execution = payment_execution(db, response['id'])
+        if execution:
+            response['execution'] = execution
     if key:
         run(db,"INSERT INTO payout_idempotency VALUES(:partner,'CREATE',:key,:hash,:payout,CAST(:response AS jsonb),now())",partner=partner,key=key,hash=hashed,payout=response['id'],response=canonical(response))
     return response

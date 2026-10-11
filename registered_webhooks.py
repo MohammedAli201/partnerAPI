@@ -31,8 +31,11 @@ def register(db,partner,url,secret,actor):
 
 def enqueue(db,payout,status,event_time,default_url=None):
     from backend_core import row
+    import json
     import payout_webhooks
     endpoint=row(db,'SELECT * FROM webhook_endpoints WHERE partner_id=:id AND enabled',id=payout.partner_id)
+    if json.loads(payout.request_payload or '{}').get('sms_test_placeholder_callback'):
+        endpoint = None
     event=payout_webhooks.build_event(payout,status,event_time,endpoint['url'] if endpoint else None)
     if event:
         event.partner_id=payout.partner_id

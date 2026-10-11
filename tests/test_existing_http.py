@@ -79,6 +79,17 @@ def test_browser_csrf_revocation_changed_roles_and_origin(pg,setup,client):
     assert http.get('/admin/api/partners').status_code==401
 
 
+def test_partner_api_cookie_does_not_require_csrf_or_replace_api_key(pg,setup,client):
+    http, main = client
+    http.cookies.set('session', 'stale-insomnia-browser-cookie')
+    body = payload().model_dump(mode='json')
+    assert http.post('/payouts-create', headers={'X-API-Key':setup['key']}, json=body).status_code == 201
+    assert http.post('/payouts-create', headers={'X-API-Key':'invalid'}, json=body).status_code == 401
+    assert http.post('/payouts-create', json=body).status_code == 422
+    assert http.post('/payouts-create', headers={'X-API-Key':setup['key'], 'Origin':'https://evil.example'}, json=body).status_code == 403
+    assert http.post('/admin/api/payment-controls', headers={'X-API-Key':setup['key']}, json={}).json()['detail'] == 'X-CSRF-Token required'
+
+
 def test_case_resolution_independent_current_proposal(pg,setup,client):
     http,main=client
     p=payload().model_dump(mode='json')

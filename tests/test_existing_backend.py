@@ -393,7 +393,7 @@ def test_safe_prearm_retry_retains_partner_funding(pg,setup):
 
 
 def test_durable_fake_worker_crash(tmp_path):
-    from worker_simulator import Journal
+    from worker_journal_fixture import Journal
     journal=Journal(str(tmp_path/'worker.sqlite3'))
     command=dict(attempt_id=str(uuid4()),payout_id=str(uuid4()),lease_generation=1,instruction_hash='a'*64)
     sends=[]

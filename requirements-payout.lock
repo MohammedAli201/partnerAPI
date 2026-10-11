@@ -5,6 +5,9 @@ anyio==4.15.1
 bcrypt==5.0.0
 certifi==2026.7.22
 click==8.5.0
+cryptography==44.0.0
+cffi==1.17.1
+pycparser==2.22
 colorama==0.4.6
 Deprecated==3.0.0
 fastapi==0.143.0

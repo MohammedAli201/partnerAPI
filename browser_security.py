@@ -65,7 +65,11 @@ def install(app,settings,session_factory):
             if request.headers.get('sec-fetch-site')=='cross-site' and origin not in origins:
                 return JSONResponse({'detail':'Cross-site request denied'},status_code=403)
             token=request.cookies.get('session')
-            if token and request.url.path!='/login':
+            # Partner admission exclusively authenticates X-API-Key; it never
+            # accepts browser cookies as credentials. A stale client cookie
+            # must not turn this API request into browser-session authentication.
+            partner_api = request.method == 'POST' and request.url.path == '/payouts-create'
+            if token and request.url.path!='/login' and not partner_api:
                 csrf=request.headers.get('x-csrf-token')
                 if not csrf:
                     return JSONResponse({'detail':'X-CSRF-Token required'},status_code=403)

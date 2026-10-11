@@ -30,3 +30,23 @@ Thumbs.db
 frontend/.f0-reference/
 frontend/audit-before.json
 static/hubaal-react/
+# Local simulator credentials, launcher state and runtime logs.
+.phone-worker-local.json
+.phone-worker-host.json
+.phone-worker-stop
+.phone-host.*.log
+.local-server.*.log
+frontend/.local-vite.*.log
+
+# Local real SMS diagnostic batch identity
+.sms-test-batch.json
+
+# Android source is versioned; machine state and generated packages are not.
+.gradle/
+.kotlin/
+build/
+local.properties
+*.apk
+*.aab
+*.jks
+*.keystore

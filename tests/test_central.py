@@ -13,9 +13,9 @@ from fastapi import HTTPException
 from sqlalchemy import create_engine,text
 
 from central import service as s
-from central.bootstrap import seed
+from central_seed_fixture import seed
 from central.processes import deliver_one,recovery_pause
-from central.simulator import Journal
+from central_journal_fixture import Journal
 
 
 @pytest.fixture

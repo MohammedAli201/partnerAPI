@@ -1,5 +1,14 @@
 # Partner-facing payout backend
 
+Android PayoutWorker connects through the enrolled `/v1` API. Its source is in
+[android/PayoutWorker](android/PayoutWorker/README.md). See
+[automatic SMS setup and persistent launcher](docs/PAYOUTWORKER.rst).
+
+SMS queue/authentication operations are handled by `sms_worker.py`; payment
+linking and development test settlement by `sms_payout.py`. Successful SMS tests
+can capture partner funds and recognize fees under Simulation / test activity.
+The records remain explicitly marked as SMS tests, with no wallet money transfer.
+
 The supplied React frontend now serves the public Hubaal website at `/`
 in this same application. Build it with `cd frontend`, `npm ci`, then `npm run build`.
 See [the React frontend handover](docs/REACT_FRONTEND.rst) for preview behavior,
@@ -28,9 +37,11 @@ python -m payment_processes callbacks
 python -m payment_processes reaper
 ```
 
-The future Pi protocol is `/internal/workers/v2`; `worker_simulator.py` implements
-a durable fake-worker journal. No Android or USSD automation is included.
-Real-worker success remains UNKNOWN until independently reconciled.
+The worker protocol is `/internal/workers/v2`; Android uses the enrolled `/v1`
+real SIM diagnostic endpoints. Runnable fake-worker scripts, synthetic phone
+provisioning and the multi-phone simulation harness have been removed.
+Legacy Android simulated payout claims are retired. See [phone setup](docs/PAYOUTWORKER.rst).
+Real-worker payment success requires independent reconciliation.
 
 With `CENTRAL_TEST_CLUSTER_URL` pointing to an explicitly disposable PostgreSQL
 cluster, run `python -B -m pytest tests -q`. The variable name is retained by test
@@ -41,11 +52,6 @@ Earlier `central/` artifacts are unused by this application. Revision 003 is a n
 in the migration history for compatibility; revision 004 hardens the existing
 public records and does not migrate partners into another service. The older
 CENTRAL documents describe that unused implementation, not this backend.
-
-Run the complete four-partner/ten-phone software simulation with
-`python -B -m simulation.run --profile mixed --period 120 --phones 10`.
-See [the end-to-end run guide](docs/E2E_SIMULATION.rst) for prerequisites,
-separate burst/spread profiles, transport boundaries and retained evidence.
 
 The supplied Hubaal admin dashboard runs at `/admin` after administrator sign-in.
 See [dashboard integration and verification](docs/ADMIN_DASHBOARD.rst) for its six

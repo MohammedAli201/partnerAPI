@@ -69,6 +69,9 @@ def build_event(payout, final_status, event_time, default_url):
         "timestamp": event_time.isoformat().replace("+00:00", "Z"),
     }
     # Emit Decimal as a JSON number without a lossy conversion through float.
+    if payload.get('sms_test_accounting'):
+        body['execution_mode'] = 'SMS_TEST'
+        body['payment_executed'] = False
     raw_body = ("{" + ",".join(
         json.dumps(key) + ":" + (format(value, "f") if isinstance(value, Decimal)
                                  else json.dumps(value, ensure_ascii=False, allow_nan=False))
@@ -135,4 +138,3 @@ def deliver_next(session_factory,*unused):
 def run_worker(stop,session_factory,*unused):
     from registered_webhooks import run_worker as worker
     return worker(stop,session_factory)
-

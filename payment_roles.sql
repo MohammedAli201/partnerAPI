@@ -9,6 +9,8 @@ GRANT UPDATE ON partners,users,payouts,payout_queue,payout_reservations,payout_w
  reconciliation_cases,payment_controls,execution_containment_reviews,fee_reversal_reviews TO partner_payout_runtime;
 GRANT UPDATE(reserved_minor) ON ledger_accounts TO partner_payout_runtime;
 GRANT DELETE ON rate_buckets TO partner_payout_runtime;
+GRANT UPDATE ON phone_enrollment_codes,phone_worker_credentials,phone_worker_assignments TO partner_payout_runtime;
+GRANT UPDATE ON phone_ussd_tests,phone_sms_batches,phone_sms_jobs TO partner_payout_runtime;
 -- No ledger cache updates, history edits/deletes/TRUNCATE, schema ownership, or
 -- permissions to disable triggers. SECURITY DEFINER triggers update caches.
 REVOKE CREATE ON SCHEMA public FROM PUBLIC;

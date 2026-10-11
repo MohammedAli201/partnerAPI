@@ -405,6 +405,9 @@ def get_payout(
         WHERE payout_id = :payout_id
     """), {"payout_id": str(payout_id)}).first()
 
+    from sms_payout import payment_execution
+    sms_execution = payment_execution(db, payout_id)
+
     return {
         "id": str(payout.id),
         "partner_tx_id": payout.partner_tx_id,
@@ -413,6 +416,7 @@ def get_payout(
         "recipient": payout.recipient,
         "provider": payout.provider,
         "status": payout.status,
+        "execution": sms_execution,
         "request_payload": json.loads(payout.request_payload) if payout.request_payload else None,
         "created_at": payout.created_at,
         "updated_at": payout.updated_at,
@@ -769,21 +773,21 @@ def admin_get_partners_for_funds(
     limit = max(1, min(limit, 100))
     offset = (page - 1) * limit
     db.execute(text("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ"))
-    
+
     params = {"limit": limit, "offset": offset}
     where_clauses = []
-    
+
     if active_only or status == "active":
         where_clauses.append("is_active = TRUE")
     elif status == "inactive":
         where_clauses.append("is_active = FALSE")
-    
+
     if search:
         where_clauses.append("(name ILIKE :search OR CAST(id AS TEXT) LIKE :search)")
         params["search"] = f"%{search}%"
-    
+
     where_sql = " AND ".join(where_clauses) if where_clauses else "1=1"
-    
+
     # Sorting
     order_by = {
         "balance_desc": "balance_available DESC",
@@ -793,25 +797,25 @@ def admin_get_partners_for_funds(
         "id_desc": "id DESC",
         "id_asc": "id ASC",
     }.get(sort, "balance_available DESC")
-    
+
     # Get total count
     count_query = text(f"""
         SELECT COUNT(*) FROM partners WHERE {where_sql}
     """)
     total = db.execute(count_query, params).scalar() or 0
-    
+
     # Get paginated partners
     query = text(f"""
-        SELECT 
-            id, name, is_active, 
+        SELECT
+            id, name, is_active,
             balance_available, balance_reserved,funding_currency,ledger_enabled,
             created_at, updated_at
-        FROM partners 
+        FROM partners
         WHERE {where_sql}
         ORDER BY {order_by},id
         LIMIT :limit OFFSET :offset
     """)
-    
+
     partners = db.execute(query, params).mappings().all()
     from earnings import period, money
     if earnings_activity not in ('live','simulation','unclassified') or earnings_currency not in ('USD','EUR','GBP'):
@@ -828,7 +832,7 @@ def admin_get_partners_for_funds(
     partners = [{**p,'balance_available':str(p['balance_available'] or 0),'balance_reserved':str(p['balance_reserved'] or 0),
                  'balance_total':str((p['balance_available'] or 0)+(p['balance_reserved'] or 0)),
                  'earned_fees':money(earnings_by_partner.get(p['id'],0)), 'earnings_currency':earnings_currency} for p in partners]
-    
+
     return {
         "partners": list(partners),
         "earnings_period": {k:reporting[k] for k in ('start_date','end_date','timezone')},
@@ -873,10 +877,10 @@ def admin_get_funds_history(
         text("SELECT id, name, funding_currency FROM partners WHERE id = :partner_id"),
         {"partner_id": partner_id}
     ).first()
-    
+
     if not partner:
         raise HTTPException(status_code=404, detail="Partner not found")
-    
+
     history = db.execute(text("""SELECT id,type,amount,previous_balance,new_balance,
         reference,admin_user,created_at,adjustment_type,notes,ledger_journal_id
         FROM balance_transactions WHERE partner_id=:partner_id
@@ -1093,6 +1097,8 @@ from earnings import make_router as earnings_router
 app.include_router(earnings_router(require_role,get_db))
 from admin_dashboard import make_router as admin_dashboard_router
 app.include_router(admin_dashboard_router(require_role,get_db))
+from phone_worker import make_router as phone_worker_router
+app.include_router(phone_worker_router(get_db,require_role))
 from public_site.routes import make_router as public_router
 from public_site.partnerships import make_router as partnership_router
 app.include_router(partnership_router(get_db,require_role))

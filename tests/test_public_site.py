@@ -48,7 +48,8 @@ def test_complete_locales_and_live_readiness(client):
     assert list(available_languages(False))==['en']
     r=http.get('/?lang=so');assert r.status_code==200
     assert '<html lang="so"' in r.text and 'Gaarsiinta lacagta gudaha' in r.text
-    assert 'lang=so#enquiry' in r.text
+    # Both the React shell and server-rendered fallback preserve locale in navigation.
+    assert '/privacy?lang=so' in r.text
     assert http.get('/?lang=ar').status_code==404
     with pytest.raises(ValidationError):BusinessConfig(launch_mode='live')
     with pytest.raises(ValidationError):BusinessConfig(service_mode='retail')

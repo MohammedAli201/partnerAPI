@@ -66,7 +66,7 @@ Limits of this evidence
 
 No real phone, wallet or telecom payment was used. No production deployment occurred.
 The 30-minute 10 requests/second target, one-minute 100 requests/second target, hardware
-phone capacity and full PITR restore drill were not run. ``central/loadtest.py`` and
+phone capacity and full PITR restore drill were not run. the former simulation load test (now removed) and
 the runbook provide reproducible procedures. The recovery test exercises the recovery
 state transition, not a complete backup restoration. Simulation success proves the
 protocol/accounting path only, not the authenticity of a real operator payment.

@@ -363,7 +363,7 @@ on queue age and peak utilization, not daily average. Scaling SIMs on one serial
 wallet will not increase that wallet's concurrency. Add independent eligible operator
 accounts/phones only after measured bottlenecks justify them.
 
-``python -m central.loadtest --rate 10 --seconds 1800 --out load-10.json`` and
+the retired simulation load test and
 ``--rate 100 --seconds 60 --out load-100.json`` are proposed backend tests. They use
 10% exact duplicate traffic, integer amounts, legitimate identical recipients, and
 emit response/error counts, p50/p95/p99, duration and client hardware. Use a dedicated
@@ -391,29 +391,8 @@ ledger balance/immutability/cache rebuild, database reconnect, callback outage,
 conservative recovery pause, wallet shortage, statement reclassification, HTTP
 commit/replay/tenant checks, and worker crashes before/after fake send.
 
-Commands:
-
-.. code-block:: powershell
-
-   python -m venv .venv-central
-   .\.venv-central\Scripts\python.exe -m pip install -r requirements-central.lock
-   $env:CENTRAL_DATABASE_URL='<migrator DSN>'
-   .\.venv-central\Scripts\python.exe -m central.migrate
-   # Provision payout_runtime and switch to its DSN before starting API.
-   $env:CENTRAL_SIMULATOR_ENABLED='true' # development only
-   $env:CENTRAL_SIMULATOR_SECRET='<separate random development secret>'
-   .\.venv-central\Scripts\python.exe -m central.bootstrap
-   # Save generated demo credentials privately; global execution is still paused.
-   .\.venv-central\Scripts\python.exe -m uvicorn central.app:app --port 8001
-   .\.venv-central\Scripts\python.exe -m central.processes callbacks
-   .\.venv-central\Scripts\python.exe -m central.processes reaper
-   $env:CENTRAL_WORKER_TOKEN='<generated worker token>'
-   .\.venv-central\Scripts\python.exe -m central.simulator --device '<device UUID>'
-
-Use the generated admin credential and POST /internal/v1/controls with scope global,
-identity all, paused false and a reviewed reason ONLY after fixture/recovery checks.
-Bootstrap is development-only and creates balanced simulated funding; never use its
-artificial balances in a production database. Disable simulator mode in production.
+Legacy fake-worker launcher, synthetic bootstrap and load-test commands have
+been retired and removed. Deterministic fixtures remain under tests only.
 
 Verification results are recorded in ``docs/CENTRAL_TEST_RESULTS.rst``. To reproduce,
 set ``CENTRAL_TEST_CLUSTER_URL`` to an explicitly disposable PostgreSQL cluster on

@@ -1,0 +1,1 @@
+<resources><string name="evc_accessibility_description">PayoutWorker EVC integration. Reads only configured USSD display fields during an explicitly active session. No verified phone profile is installed; real execution remains blocked.</string></resources>
