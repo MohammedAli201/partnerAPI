@@ -61,6 +61,7 @@ class MainActivity: ComponentActivity() {
    if(!configured)OutlinedTextField(confirm,{confirm=it.take(12)},label={Text("Confirm PIN")},visualTransformation=PasswordVisualTransformation(),keyboardOptions=KeyboardOptions(keyboardType=KeyboardType.NumberPassword),modifier=Modifier.fillMaxWidth())
    Button(onClick={if(configured)vm.unlock(pin)else vm.setupPin(pin,confirm);pin="";confirm=""},enabled=!busy){Text(if(configured)"Unlock controls"else"Save PIN")}
   } else {
+   ProviderPinCard(vm)
    if(enrolled) {SmsQueueCard(vm);ManualUssdTestCard(vm)}
    if(!enrolled) {
     Text("Enroll this phone",style=MaterialTheme.typography.titleMedium)
@@ -95,5 +96,19 @@ class MainActivity: ComponentActivity() {
   }}}
   TextButton(onClick={details=!details}){Text("Settings and redacted diagnostics")}
   if(details)Text("Version ${BuildConfig.VERSION_NAME} • real SIM USSD test\n${vm.g.readiness.simDiagnostics()}\nOperator starts each USSD test; requests are not automatically repeated.\nManual USSD diagnostic available; payment flow/accessibility not integrated.\nScreenshots and backup are disabled.\nBackend: ${if(enrolled)vm.g.backend.baseUrl()else"not enrolled"}")
+ }}
+}
+@Composable private fun ProviderPinCard(vm:WorkerViewModel) {
+ val saved by vm.providerPinConfigured.collectAsState()
+ val busy by vm.busy.collectAsState()
+ var pin by remember {mutableStateOf("")}
+ var confirmation by remember {mutableStateOf("")}
+ Card(Modifier.fillMaxWidth()) {Column(Modifier.padding(14.dp),verticalArrangement=Arrangement.spacedBy(10.dp)) {
+  Text("EVC payment PIN",style=MaterialTheme.typography.titleMedium)
+  Text(if(saved)"A payment PIN is saved on this phone. Enter both fields to replace it."else"Enter this SIM's EVC payment PIN and confirm it.")
+  Text("Stored encrypted on this phone. Separate from your operator PIN. Update it if you change SIM. Automatic payment execution is not enabled yet.")
+  OutlinedTextField(pin,{pin=it.filter(Char::isDigit).take(12);vm.touch()},label={Text("EVC payment PIN")},visualTransformation=PasswordVisualTransformation(),keyboardOptions=KeyboardOptions(keyboardType=KeyboardType.NumberPassword),modifier=Modifier.fillMaxWidth())
+  OutlinedTextField(confirmation,{confirmation=it.filter(Char::isDigit).take(12);vm.touch()},label={Text("Confirm EVC payment PIN")},visualTransformation=PasswordVisualTransformation(),keyboardOptions=KeyboardOptions(keyboardType=KeyboardType.NumberPassword),modifier=Modifier.fillMaxWidth())
+  Button(onClick={vm.saveProviderPin(pin,confirmation);pin="";confirmation=""},enabled=!busy&&pin.isNotBlank()&&confirmation.isNotBlank()){Text(if(saved)"Update EVC PIN"else"Save EVC PIN")}
  }}
 }

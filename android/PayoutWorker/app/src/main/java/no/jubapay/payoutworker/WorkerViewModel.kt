@@ -15,6 +15,8 @@ class WorkerViewModel(app: Application): AndroidViewModel(app) {
  val message=MutableStateFlow("")
  val enrolled=MutableStateFlow(g.backend.enrolled())
  val pinConfigured=MutableStateFlow(g.pin.configured())
+ private val providerPin=no.jubapay.payoutworker.data.LocalProviderPin(g.vault)
+ val providerPinConfigured=MutableStateFlow(providerPin.configured())
  val unlocked=MutableStateFlow(false)
  val busy=MutableStateFlow(false)
  private var lastInteraction=0L
@@ -39,6 +41,14 @@ class WorkerViewModel(app: Application): AndroidViewModel(app) {
  }}
  fun setupPin(pin:String,confirm:String)=action {g.pin.setup(pin,confirm);pinConfigured.value=true;unlocked.value=true;touch()}
  fun unlock(pin:String)=action {unlocked.value=g.pin.verify(pin);if(unlocked.value){touch();message.value="Controls unlocked"}else message.value="PIN not accepted or temporarily rate-limited"}
+ fun saveProviderPin(pin:String,confirmation:String)=action {
+  check(unlocked.value)
+  if(pin.length !in 4..12 || pin.any{it !in '0'..'9'} || pin!=confirmation) {
+   message.value="EVC PINs must match and contain 4–12 digits";return@action
+  }
+  providerPin.set(pin.toCharArray(),confirmation.toCharArray())
+  providerPinConfigured.value=true;touch();message.value="EVC payment PIN saved securely on this phone"
+ }
  fun enroll(url:String,code:String)=action {check(unlocked.value);g.backend.enroll(url,code);enrolled.value=true;message.value="Enrolled for real SIM diagnostics";touch()}
 
  fun pause(){if(unlocked.value){g.engine.pause();touch();message.value="Paused: no new submissions; existing confirmation tracking continues"}}
