@@ -29,7 +29,7 @@ const Faq = () => {
           <Reveal>
             <PayoutEyebrow>FAQ</PayoutEyebrow>
             <h2 id="faq-title" className="mt-7 font-sans font-extrabold tracking-[-0.025em] leading-[1.2] text-[2rem] sm:text-[2.5rem] lg:text-[3rem] text-ink-light">
-              Partner questions
+              Before we begin
             </h2>
           </Reveal>
         </div>

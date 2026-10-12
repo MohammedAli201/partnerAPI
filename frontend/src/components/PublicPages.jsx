@@ -10,6 +10,7 @@ import { FAQS } from './Faq';
 import Partners from './Partners';
 import TransactForm from './TransactForm';
 import PartnerOnboarding from './PartnerOnboarding';
+import { VALUES } from '../content/site';
 
 export function FAQs({ searchable = false }) {
   const { copy, lang } = useBusiness(), link = useLink();
@@ -61,7 +62,7 @@ export function PublicPage({ path }) {
     </section>
     {page === 'receive' && <><section className="section-shell pt-0 grid lg:grid-cols-2 gap-12"><div><h2 className="section-title">{copy.wallet_title}</h2><p className="mt-5 text-ink-dim leading-relaxed">{copy.wallet_text}</p><p className="mt-5 text-ink-dim">{copy.receiving_availability}</p><Link to={link('/receive#checklist')} className="button-secondary mt-7">{copy.view_checklist}</Link></div><ReceivingPanel/></section><section id="checklist" className="section-shell"><h2 className="section-title">{copy.checklist_heading}</h2><div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-10">{['name','number','cost','reference'].map((key,i) => <article key={key}><span className="text-accent font-mono text-sm">0{i+1}</span><h3 className="font-display text-xl mt-4">{copy['check_'+key]}</h3><p className="text-ink-dim mt-3 leading-relaxed">{copy['check_'+key+'_text']}</p></article>)}</div><p className="text-accent mt-8">{copy.never_pin}</p></section><Stats/></>}
     {page === 'partners' && <><section className="section-shell pt-0 grid lg:grid-cols-2 gap-12"><div><h2 className="section-title">{copy.coverage_title}</h2><p className="mt-5 text-ink-dim leading-relaxed">{copy.coverage_text}</p><span className="preview-tag mt-6">{copy.somalia}</span></div><div><h2 className="font-display text-xl">{copy.summary_title}</h2><dl className="mt-6">{['currency','methods','recipient','delivery','reporting','support'].map(key => <div className="grid grid-cols-[1fr_1.5fr] gap-5 border-t border-stroke py-4 text-sm" key={key}><dt className="text-ink-dim">{copy['summary_'+key]}</dt><dd>{copy['summary_'+key+'_value']}</dd></div>)}</dl></div></section><PartnerOnboarding/><Partners/><TransactForm/></>}
-    {page === 'about' && <About/>}
+    {page === 'about' && <><About/><section id="commitments" className="section-shell company-commitments" aria-labelledby="company-commitments-title"><h2 id="company-commitments-title">What partners can expect</h2><dl className="company-commitments-list">{VALUES.map(value => <div key={value.title}><dt>{value.title}</dt><dd>{value.text}</dd></div>)}</dl></section></>}
     {page === 'help' && <section className="section-shell pt-0"><FAQs searchable/></section>}
     {page === 'contact' && <section className="section-shell pt-0 grid md:grid-cols-2 gap-6">
       <article className="content-card"><h2 className="text-xl font-bold">Partnership enquiries</h2><p className="mt-4 text-ink-dim leading-relaxed">Discuss your receiving methods, expected volumes and integration requirements.</p><a href="mailto:partners@hubaal.so" className="inline-block mt-5 text-accent underline underline-offset-4">partners@hubaal.so</a><div><Link to={link('/#partner-form')} className="button-primary mt-6">{copy.discuss}<ArrowRight size={17} aria-hidden="true"/></Link></div></article>

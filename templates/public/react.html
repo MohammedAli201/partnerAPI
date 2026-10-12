@@ -7,13 +7,15 @@
 <meta property="og:type" content="website"><meta property="og:site_name" content="{{ business.brand }}">
 <meta property="og:title" content="{{ page_title }} · {{ business.brand }}"><meta property="og:description" content="{{ description }}">
 {% if preview %}<meta name="robots" content="noindex,nofollow,noarchive">{% endif %}
-<meta name="theme-color" content="#FFFFFF"><link rel="icon" href="/static/hubaal/symbol.svg" type="image/svg+xml">
+<meta name="theme-color" content="#F7F5EF"><link rel="icon" href="/static/hubaal/symbol.svg" type="image/svg+xml">
 {% if business.website_url %}<link rel="canonical" href="{{ business.website_url.rstrip('/') }}{{ request.url.path }}">{% endif %}
 {% if structured_data %}<script type="application/ld+json">{{ structured_data|tojson }}</script>{% endif %}
 {% for css in frontend_assets.css %}<link rel="stylesheet" href="{{ css }}">{% endfor %}
 <script id="hubaal-bootstrap" type="application/json">{{ bootstrap|tojson }}</script>
 <script type="module" src="{{ frontend_assets.js }}"></script>
-<link rel="stylesheet" href="/static/hubaal/fonts/hubaal-fonts.css">
+<link rel="preload" href="/static/hubaal/fonts/inter-belmoney-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/static/hubaal/fonts/league-spartan-belmoney-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/hubaal/fonts/hubaal-reference-fonts.css">
 </head><body>
 <div id="root"></div>
 <noscript><header><a href="{{ link('/') }}">{{ business.brand }}</a></header><main id="main"><h1>{{ page_title }}</h1><p>{{ description }}</p>

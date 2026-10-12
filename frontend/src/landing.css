@@ -1,0 +1,52 @@
+@layer components {
+  .source-landing .container-x {
+    @apply mx-auto w-full max-w-[1200px] px-5 sm:px-8 lg:px-10;
+  }
+  .source-landing .eyebrow {
+    @apply inline-flex items-center gap-2 font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-teal-700;
+  }
+  .source-landing .eyebrow::before {
+    content: "";
+    @apply inline-block h-1.5 w-1.5 rounded-full bg-teal-500;
+  }
+  .source-landing .h-display {
+    @apply font-sans font-semibold tracking-[-0.035em] text-ink;
+  }
+  .source-landing .h2 {
+    @apply font-sans font-semibold tracking-[-0.035em] text-ink text-[34px] leading-[1.08] sm:text-[42px] lg:text-[50px];
+  }
+  .source-landing .lead {
+    @apply text-base leading-relaxed text-ink-3 sm:text-lg;
+  }
+  .source-landing .btn-primary {
+    @apply inline-flex h-12 items-center justify-center gap-2 rounded-full bg-ink px-6 text-[15px] font-medium text-white transition-[background-color,transform,box-shadow] duration-300 hover:bg-teal-700 hover:shadow-glow active:scale-[0.98];
+  }
+  .source-landing .btn-secondary {
+    @apply inline-flex h-12 items-center justify-center gap-2 rounded-full border border-line-strong bg-white/70 px-6 text-[15px] font-medium text-ink backdrop-blur transition-[border-color,background-color,transform] duration-300 hover:border-ink hover:bg-white active:scale-[0.98];
+  }
+  .source-landing .surface {
+    @apply rounded-2xl border border-line bg-white shadow-soft;
+  }
+  .source-landing .grid-dots {
+    background-image: radial-gradient(rgba(11, 18, 32, 0.08) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  .source-landing .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.35;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  }
+  .source-landing .flow-line {
+    stroke-dasharray: 6 10;
+    animation: dash 1.4s linear infinite;
+  }
+  .source-landing .mask-fade-x {
+    -webkit-mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+  }
+}
+

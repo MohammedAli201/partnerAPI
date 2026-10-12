@@ -1,5 +1,4 @@
 import { ArrowRight } from "lucide-react";
-import "./PayoutSections.css";
 
 export const PayoutEyebrow = ({ children }) => <p className="payout-section-eyebrow">{children}</p>;
 

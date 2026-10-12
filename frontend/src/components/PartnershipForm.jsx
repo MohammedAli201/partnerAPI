@@ -6,7 +6,7 @@ import { partnershipChannelOptions } from "../channels";
 
 const API = "/api";
 
-const VOLUMES = ["Under $10k / month", "$10k – $100k / month", "$100k – $1M / month", "Over $1M / month"];
+const VOLUMES = ["Under $10k / month", "$10k \u2013 $100k / month", "$100k \u2013 $1M / month", "Over $1M / month"];
 const CHANNELS = partnershipChannelOptions;
 
 const inputCls =
@@ -68,13 +68,12 @@ const PartnershipForm = () => {
     <section id="partner-form" className="py-16 sm:py-24 bg-void">
       <div className="max-w-[1200px] mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-12 items-center">
         <Reveal>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-gold mb-4">Partnership enquiry</p>
+          <p className="site-eyebrow">Partnership enquiry</p>
           <h2 className="font-bold tracking-[-0.01em] leading-[1.1] text-[1.75rem] sm:text-[2.375rem] lg:text-[2.75rem] text-ink-light max-w-md">
-            Discuss your Somalia corridor
+            Tell us what you need.
           </h2>
           <p className="mt-5 text-base sm:text-[17px] leading-[1.6] text-ink-dim max-w-md">
-            Share your business details and receiving requirements. Our partnership
-            team will review your enquiry.
+            Share your business details and expected payout needs. Our team will review your enquiry and respond.
           </p>
         </Reveal>
 
@@ -92,7 +91,7 @@ const PartnershipForm = () => {
                   <CheckCircle2 size={48} className="text-brass mx-auto" />
                   <h3 className="mt-5 text-2xl font-bold text-white">Enquiry received</h3>
                   <p className="mt-3 text-base text-white/70 max-w-xs mx-auto">
-                    Reference <span className="font-mono text-sm text-brass">{reference}</span> —
+                    Reference <span className="font-mono text-sm text-brass">{reference}</span> -
                     your enquiry has been recorded for our partnership team.
                   </p>
                   <button
@@ -197,7 +196,7 @@ const PartnershipForm = () => {
                   </div>
                   {status === "error" && (
                     <p data-testid="partner-error-message" role="alert" className="text-sm text-red-300">
-                      We couldn’t send your enquiry. Your details are still in the form.
+                      We couldn't send your enquiry. Your details are still in the form.
                       Try again or email <a href="mailto:partners@hubaal.so" className="underline underline-offset-4">partners@hubaal.so</a>.
                     </p>
                   )}

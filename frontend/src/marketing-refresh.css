@@ -1,0 +1,76 @@
+/* Landing-page-only design system. Other public and partner routes retain their styles. */
+.source-landing {background:#F7F5EF;color:#142D30;font-family:Inter,Arial,sans-serif;font-size:18px;line-height:1.6;letter-spacing:0;}
+.source-landing h1,.source-landing h2,.source-landing h3,.source-landing h4 {font-family:'League Spartan',Arial,sans-serif;text-transform:none;}
+.source-landing #hero h1 {font-size:clamp(42px,5.3vw,72px);font-weight:650;line-height:1.08;letter-spacing:-.025em;text-transform:none;text-wrap:pretty;}
+.source-landing h2.h2,.source-landing #coverage .coverage-network-title {font-size:clamp(34px,3.6vw,48px);font-weight:600;line-height:1.13;letter-spacing:-.02em;text-wrap:pretty;}
+.source-landing h3 {font-size:24px;font-weight:600;line-height:1.2;letter-spacing:-.01em;}
+.source-landing p,.source-landing dd {font-size:17px;line-height:1.6;letter-spacing:0;}
+.source-landing .lead {font-size:18px;line-height:1.6;}
+.source-landing .eyebrow,.source-landing .font-mono,.source-landing label > span,.source-landing .uppercase {font-family:Inter,Arial,sans-serif;font-size:14px;line-height:1.5;letter-spacing:0;text-transform:none;}
+.source-landing .eyebrow::before {display:none;}
+.source-landing .eyebrow {font-weight:600;color:#075E63;}
+.source-landing .btn-primary,.source-landing .btn-secondary {min-height:50px;height:auto;padding:14px 24px;font-size:16px;font-weight:600;line-height:1.4;white-space:normal;box-shadow:none;backdrop-filter:none;}
+.source-landing .btn-primary {background:#075E63;color:#fff;}
+.source-landing .btn-primary:hover {background:#064C50;box-shadow:none;}
+.source-landing .btn-secondary {background:transparent;border-color:#075E63;color:#075E63;}
+.source-landing .surface {box-shadow:none;border-color:#D5E1DB;}
+.source-landing .grid-dots,.source-landing .pointer-events-none[class*="blur-"],.source-landing .pointer-events-none[class*="bg-gradient"] {display:none;}
+.source-landing .grain::after {display:none;}
+.source-landing #hero > .container-x {min-height:0;padding-top:100px;padding-bottom:100px;gap:48px;}
+.source-landing #hero h1 > span {padding-bottom:0;overflow:visible;}
+.source-landing #hero .text-teal-600 {color:#075E63;}
+.source-landing #hero [data-testid="hero-status-note"] {font-size:14px;color:#48645F;}
+.source-landing #why-hubaal,.source-landing #trust {background:#F7F5EF;}
+.source-landing #exceptions {background:#C4E6D8;}
+.source-landing section:not(#hero) {padding-top:88px;padding-bottom:88px;}
+.source-landing [data-dark],.source-landing [data-testid="site-footer"] {background:#075E63;color:#fff;}
+.source-landing [data-dark] .eyebrow,.source-landing [data-dark] .lead,.source-landing [data-dark] [class*="text-slate-"],.source-landing [data-dark] .text-teal-300 {color:#C4E6D8;}
+.source-landing [data-dark] .btn-primary {background:#C4E6D8;color:#142D30;}
+.source-landing [data-dark] .btn-primary:hover {background:#e1f1e9;}
+.source-landing [data-dark] input,.source-landing [data-dark] select,.source-landing [data-dark] textarea {font-size:16px;border-color:#72A5A3;}
+.source-landing [data-dark] input::placeholder,.source-landing [data-dark] textarea::placeholder {color:#C4E6D8;}
+.source-landing [data-dark] [aria-pressed="true"] {background:#C4E6D8;color:#142D30;border-color:#C4E6D8;}
+.source-landing [data-testid="site-footer"] [class*="text-ink-"],.source-landing [data-testid="footer-disclaimer"] {color:#C4E6D8;}
+.source-landing [data-testid="site-footer"] a:hover {color:#fff;}
+.source-landing [data-testid="site-footer"] p,.source-landing [data-testid="site-footer"] .font-mono {font-size:14px;}
+.source-landing [data-testid="site-footer"] [data-testid="footer-logo"] {color:#fff;}
+.source-landing [data-testid="footer-status-badge"],.source-landing [data-testid="trust-regulatory-badge"] {background:#F7F5EF;color:#142D30;border-color:#D5E1DB;}
+.source-landing [data-testid="footer-status-badge"] {font-size:14px;}
+.source-landing [data-testid="site-nav"] {background:#F7F5EF;color:#142D30;backdrop-filter:none;}
+.source-landing [data-testid="site-nav"] nav a,.source-landing [data-testid="site-nav"] a {font-size:15px;}
+.source-landing [data-testid="site-nav"] nav a {color:#142D30;}
+.source-landing .coverage-network {max-width:none;}
+.source-landing .coverage-network-description {font-size:18px;}
+.source-landing [class*="coverage-network-"]:is(p,span,td,th) {font-size:14px;}
+.source-landing .coverage-network-channel-name {font-family:'League Spartan',Arial,sans-serif;font-size:24px;}
+.source-landing .company-story-introduction,.source-landing .company-story-biography {font-size:18px;line-height:1.6;}
+.source-landing .company-story-role {font-size:14px;}
+.source-landing #about .company-story-title {font-size:clamp(34px,3.6vw,48px);font-weight:600;line-height:1.13;letter-spacing:-.02em;}
+.source-landing #about .company-story-name {font-size:24px;font-weight:600;}
+.source-landing .coverage-network-intro span {color:#C4E6D8;}
+.source-landing [class*="text-[10"],.source-landing [class*="text-[11"],.source-landing [class*="text-[12"],.source-landing [class*="text-[13"],.source-landing .text-xs {font-size:14px;}
+.source-landing [data-testid="site-nav"][class*="bg-ink"] {background:#075E63;color:#fff;}
+.source-landing [data-testid="site-nav"][class*="bg-ink"] nav a {color:#fff;}
+.source-landing [data-testid="site-nav"][class*="bg-ink"] .btn-primary {background:#C4E6D8;color:#142D30;}
+.source-landing [data-testid="site-footer"] [class*="text-slate-"] {color:#C4E6D8;}
+.source-landing [data-testid="api-code-block"],.source-landing [data-testid="api-code-block"] *,.source-landing [data-testid="enquiry-reference"] {font-family:'Roboto Mono',monospace;font-size:14px;letter-spacing:0;}
+.source-landing [data-testid="api-code-block"] {line-height:1.75;}
+.source-landing .connection-visual {padding:40px;background:#075E63;color:#fff;border-radius:28px;}
+.source-landing .connection-visual p {color:#C4E6D8;}
+.source-landing .connection-visual .connection-title {margin:32px 0;font-family:'League Spartan',Arial,sans-serif;font-size:40px;line-height:1.1;letter-spacing:-.02em;color:#fff;}
+.source-landing .connection-route {display:flex;align-items:center;gap:16px;margin:28px 0;color:#C4E6D8;}
+.source-landing .connection-route span {flex:1;height:1px;background:#72A5A3;}
+.source-landing .connection-channels {display:grid;grid-template-columns:1fr 1fr;gap:12px;list-style:none;padding:0;}
+.source-landing .connection-channels li {padding:16px;border:1px solid #72A5A3;border-radius:12px;}
+.source-landing .connection-channels strong {display:block;font-size:18px;font-weight:600;}
+.source-landing .connection-channels span {font-size:14px;color:#C4E6D8;}
+@media(max-width:767px){
+ .source-landing #hero > .container-x {padding-top:56px;padding-bottom:56px;gap:40px;}
+ .source-landing section:not(#hero) {padding-top:56px;padding-bottom:56px;}
+ .source-landing #hero h1 {font-size:44px;}
+ .source-landing .connection-visual {padding:28px;}
+ .source-landing .coverage-network-intro {padding:28px;}
+ .source-landing .coverage-network-directory {padding:12px 20px 24px;}
+ .source-landing .coverage-network-masthead {padding:20px 28px;}
+ .source-landing .coverage-network-table tbody th,.source-landing .coverage-network-table tbody td {padding-block:20px;}
+}

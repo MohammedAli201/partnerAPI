@@ -1,0 +1,137 @@
+/* One public-site system: one font, one heading scale, one spacing rhythm. */
+.hubaal-site {
+ --hb-teal:#075E63; --hb-teal-hover:#064C50; --hb-ink:#142D30; --hb-muted:#48645F;
+ --hb-ivory:#F7F5EF; --hb-line:#D5E1DB; --hb-mint:#D9F1E8;
+ --hb-radius:16px; --hb-space:88px; --hb-heading:clamp(32px,3.7vw,50px);
+ font-family:Inter,'Segoe UI',sans-serif;color:var(--hb-ink);background:#fff;
+}
+.hubaal-site h1,.hubaal-site h2,.hubaal-site h3,.hubaal-site button,.hubaal-site input,.hubaal-site select {font-family:inherit;}
+.hubaal-site h1 {font-size:clamp(40px,5.1vw,70px);font-weight:500;letter-spacing:-.05em;line-height:1.08;text-wrap:balance;}
+.hubaal-site h2 {font-size:var(--hb-heading);font-weight:500;letter-spacing:-.045em;line-height:1.15;text-transform:none;text-wrap:balance;}
+.hubaal-site h3 {font-size:21px;font-weight:600;letter-spacing:-.025em;line-height:1.4;}
+.hubaal-site .font-mono {font-family:inherit;}
+.hubaal-site .payout-section,.hubaal-site .site-section,.hubaal-site .hubaal-about,
+.hubaal-site #how-it-works,.hubaal-site #api,.hubaal-site #faq,.hubaal-site #partner-form {padding:var(--hb-space) 0;}
+.hubaal-site .site-container,.hubaal-site .payout-section-container,.hubaal-site .hubaal-about-container,
+.hubaal-site [class*="max-w-[1200px]"] {width:100%;max-width:1200px;margin:0 auto;padding-inline:32px;}
+.hubaal-site .payout-section-eyebrow,.hubaal-site .hubaal-about-eyebrow,
+.hubaal-site .site-eyebrow {
+ color:var(--hb-teal);font-size:10px;font-weight:600;letter-spacing:.18em;line-height:1.6;text-transform:uppercase;border:0;padding:0;margin:0 0 20px;
+}
+.hubaal-site .payout-section-eyebrow::after {display:none;}
+.hubaal-site .site-copy,.hubaal-site .payout-section-copy,.hubaal-site .hubaal-about-copy {font-size:16px;line-height:1.8;color:var(--hb-muted);max-width:43ch;}
+.hubaal-site .site-section-heading,.hubaal-site .channels-heading-row,.hubaal-site .why-payout-heading {display:grid;grid-template-columns:1.2fr 1fr;gap:24px 64px;align-items:end;margin:0;}
+.hubaal-site .site-heading,.hubaal-site .payout-section-heading {margin:0;}
+.hubaal-site .payout-section-heading span {color:var(--hb-teal);font-style:normal;}
+.hubaal-site .channels-heading-row .payout-section-copy {grid-column:auto;grid-row:auto;}
+.hubaal-site a[data-testid$="cta"],.hubaal-site .payout-section-cta,
+.hubaal-site [data-testid="partner-submit-btn"] {display:inline-flex;align-items:center;justify-content:center;gap:14px;border-radius:999px;min-height:48px;padding:12px 23px;font-size:13px;font-weight:600;line-height:1.5;background:var(--hb-teal);color:#fff;border:1px solid var(--hb-teal);box-shadow:none;transition:background-color .18s;}
+.hubaal-site a[data-testid$="cta"]:hover,.hubaal-site [data-testid="partner-submit-btn"]:hover {background:var(--hb-teal-hover);}
+.hubaal-site .premium-channels {background:var(--hb-ivory);}
+.hubaal-site .payout-channel-panel {margin-top:40px;}
+.hubaal-site .payout-channel-groups {display:grid;grid-template-columns:1.25fr 1fr .8fr;gap:16px;}
+.hubaal-site .payout-channel-group {display:flex;flex-direction:column;min-width:0;min-height:285px;padding:26px;border:1px solid var(--hb-line);border-radius:var(--hb-radius);background:#fff;}
+.hubaal-site .payout-channel-group:first-child {background:var(--hb-teal);border-color:var(--hb-teal);color:#fff;}
+.hubaal-site .channel-card-top,.hubaal-site .capability-top {display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:32px;color:var(--hb-teal);}
+.hubaal-site .channel-index,.hubaal-site .site-number,.hubaal-site .capability-top > span {font-size:10px;font-weight:500;letter-spacing:.1em;}
+.hubaal-site .payout-channel-group:first-child .channel-card-top {color:#D9F1E8;}
+.hubaal-site .channel-description {font-size:13px;line-height:1.8;color:var(--hb-muted);margin-top:10px;}
+.hubaal-site .payout-channel-group:first-child .channel-description {color:#D9F1E8;}
+.hubaal-site .payout-channel-logos {display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:auto;padding:15px 10px;background:#fff;border-radius:8px;min-height:83px;list-style:none;}
+.hubaal-site .payout-channel-logos li {display:flex;justify-content:center;flex:1;min-width:0;}
+.hubaal-site .payout-channel-logos .channel-logo {width:100%;max-width:120px;--channel-logo-height:58px;}
+.hubaal-site .payout-channel-cash-icon {width:60px;height:60px;color:var(--hb-teal);margin:26px 0 0;}
+.hubaal-site .payout-channel-currency {display:flex;align-items:center;justify-content:space-between;gap:24px;padding-top:24px;font-size:12px;color:var(--hb-muted);}
+.hubaal-site .payout-channel-currency > span {display:flex;align-items:center;gap:9px;}
+.hubaal-site .currency-dot {width:5px;height:5px;border-radius:50%;background:var(--hb-teal);}
+.hubaal-site .payout-channel-currency strong {color:var(--hb-teal);font-size:16px;font-weight:600;}
+.hubaal-site .payout-channel-currency strong span {font-size:11px;color:var(--hb-muted);font-weight:400;margin-left:10px;}
+.hubaal-site .premium-why {background:#fff;}
+.hubaal-site .payout-capabilities {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:36px;margin-top:42px;border-top:1px solid var(--hb-line);padding-top:30px;}
+.hubaal-site .payout-capability {min-width:0;}
+.hubaal-site .payout-capability-icon {width:24px;height:24px;}
+.hubaal-site .payout-capability h3 {margin-bottom:12px;}
+.hubaal-site .payout-capability p {font-size:14px;line-height:1.8;color:var(--hb-muted);}
+.hubaal-site .core-values {background:var(--hb-ivory);}
+.hubaal-site .values-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:40px;}
+.hubaal-site .values-grid > div {min-width:0;}
+.hubaal-site .value-card {height:100%;padding:28px;border:1px solid var(--hb-line);border-radius:var(--hb-radius);background:#fff;}
+.hubaal-site .value-card-top {display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:26px;}
+.hubaal-site .value-icon {display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:11px;background:#D9F1E8;color:var(--hb-teal);}
+.hubaal-site .site-number {color:#48645F;}
+.hubaal-site .value-card h3 {font-size:19px;margin-bottom:12px;}
+.hubaal-site .value-card p {font-size:14px;line-height:1.8;color:var(--hb-muted);}
+.hubaal-site #how-it-works {background:#fff;}
+.hubaal-site #how-it-works > div {gap:64px;}
+.hubaal-site #how-it-works img {border-radius:var(--hb-radius);box-shadow:none;}
+.hubaal-site #how-it-works h2 {margin-top:0;}
+.hubaal-site #how-it-works h2 + p {font-size:16px;line-height:1.8;color:var(--hb-muted);}
+.hubaal-site #how-it-works [data-testid="how-it-works-grid"] > div:not(:first-child) > div > div,
+.hubaal-site [data-testid="faq-list"] > div > div {border:0;border-radius:0;background:transparent;border-bottom:1px solid var(--hb-line);}
+.hubaal-site #how-it-works button,.hubaal-site #faq button {padding:21px 0;gap:20px;}
+.hubaal-site #how-it-works button > span:first-child,.hubaal-site #faq button > span:first-child {font-weight:500;font-size:16px;line-height:1.6;}
+.hubaal-site #how-it-works button > span:last-child,.hubaal-site #faq button > span:last-child {background:#D9F1E8;color:var(--hb-teal);width:30px;height:30px;}
+.hubaal-site #how-it-works button svg,.hubaal-site #faq button svg {color:var(--hb-teal);stroke-width:1.7;}
+.hubaal-site #how-it-works [role="region"] p,.hubaal-site #faq [role="region"] p {padding:0 40px 22px 0;font-size:14px;line-height:1.8;color:var(--hb-muted);}
+.hubaal-site #api {background:var(--hb-teal);}
+.hubaal-site #api h2 {max-width:16ch;margin-top:0;}
+.hubaal-site #api .site-eyebrow {color:#D9F1E8;}
+.hubaal-site #api h2 + p {font-size:16px;line-height:1.8;color:#D9F1E8;max-width:43ch;}
+.hubaal-site #api [data-testid="api-cta"] {background:#F7F5EF;color:var(--hb-teal);border-color:#F7F5EF;}
+.hubaal-site [data-testid="api-example"] {border-radius:var(--hb-radius);background:#142D30;box-shadow:none;border:1px solid #A8C4BA;}
+.hubaal-site [data-testid="api-example"] > div:first-child > p {font-size:15px;font-weight:500;}
+.hubaal-site [data-testid="api-example"] dd.text-3xl {font-size:30px;font-weight:500;}
+.hubaal-site .hubaal-about {background:#fff;}
+.hubaal-site .hubaal-about-layout {display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:64px;}
+.hubaal-site .hubaal-about-eyebrow {display:flex;align-items:center;gap:20px;}
+.hubaal-site .hubaal-about-rule {flex:1;height:1px;background:var(--hb-line);}
+.hubaal-site .hubaal-about-title span {display:block;color:var(--hb-teal);}
+.hubaal-site .hubaal-about-copy {margin-top:24px;}
+.hubaal-site .hubaal-about-office {position:relative;overflow:hidden;background:var(--hb-ivory);border:1px solid var(--hb-line);border-radius:var(--hb-radius);padding:34px;color:var(--hb-ink);}
+.hubaal-site .hubaal-about-orbits {position:absolute;right:0;top:0;pointer-events:none;opacity:.35;}
+.hubaal-site .hubaal-about-office-label,.hubaal-site .hubaal-about-contact-label {position:relative;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--hb-muted);}
+.hubaal-site .hubaal-about-location {position:relative;font-size:32px;font-weight:500;letter-spacing:-.04em;line-height:1.2;margin-top:24px;}
+.hubaal-site .hubaal-about-contact {position:relative;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-top:26px;padding-top:24px;border-top:1px solid var(--hb-line);}
+.hubaal-site .hubaal-about-contact a {display:inline-block;font-size:15px;color:var(--hb-teal);margin-top:9px;overflow-wrap:anywhere;}
+.hubaal-site .hubaal-about-pin {color:var(--hb-teal);flex-shrink:0;}
+.hubaal-site #faq {background:var(--hb-ivory);}
+.hubaal-site #faq h2 {margin-top:0;}
+.hubaal-site #partner-form {background:#fff;}
+.hubaal-site #partner-form h2 {margin-top:0;max-width:15ch;}
+.hubaal-site #partner-form h2 + p {font-size:16px;line-height:1.8;color:var(--hb-muted);}
+.hubaal-site #partner-form > div {align-items:start;gap:64px;}
+.hubaal-site #partner-form > div > div:nth-child(2) > div {background:var(--hb-ivory);border:1px solid var(--hb-line);border-radius:var(--hb-radius);box-shadow:none;}
+.hubaal-site #partner-form label > span {color:var(--hb-ink);font-size:12px;font-weight:500;}
+.hubaal-site #partner-form input,.hubaal-site #partner-form select {font-size:14px;min-height:48px;background:#fff;border:1px solid #A8C4BA;border-radius:8px;color:var(--hb-ink);}
+.hubaal-site #partner-form form > p:last-child,.hubaal-site #partner-form [data-testid="partner-success-message"] p {color:var(--hb-muted);}
+.hubaal-site #partner-form form > p:last-child a {color:var(--hb-teal);}
+.hubaal-site #partner-form [data-testid="partner-success-message"] h3 {color:var(--hb-ink);}
+.hubaal-site #partner-form [data-testid="partner-error-message"] {color:#9b242a;}
+.hubaal-site #partner-form [data-testid="partner-new-enquiry-btn"] {color:var(--hb-teal);border-color:var(--hb-teal);}
+.hubaal-site a:focus-visible,.hubaal-site button:focus-visible,.hubaal-site input:focus-visible,.hubaal-site select:focus-visible {outline:2px solid var(--hb-teal);outline-offset:4px;}
+@media(max-width:1023px) {
+ .hubaal-site {--hb-space:64px;}
+ .hubaal-site .values-grid {grid-template-columns:repeat(2,minmax(0,1fr));}
+ .hubaal-site .site-section-heading,.hubaal-site .channels-heading-row,.hubaal-site .why-payout-heading,.hubaal-site .hubaal-about-layout {gap:28px;}
+ .hubaal-site .payout-channel-groups {grid-template-columns:1fr 1fr;}
+ .hubaal-site .payout-channel-cash {grid-column:1/-1;min-height:200px;}
+ .hubaal-site #how-it-works > div,.hubaal-site #partner-form > div {gap:36px;}
+}
+@media(max-width:639px) {
+ .hubaal-site {--hb-space:52px;}
+ .hubaal-site .site-container,.hubaal-site .payout-section-container,.hubaal-site .hubaal-about-container,.hubaal-site [class*="max-w-[1200px]"] {padding-inline:20px;}
+ .hubaal-site .site-section-heading,.hubaal-site .channels-heading-row,.hubaal-site .why-payout-heading,.hubaal-site .hubaal-about-layout,.hubaal-site .payout-capabilities {grid-template-columns:1fr;gap:24px;}
+ .hubaal-site .values-grid,.hubaal-site .payout-channel-groups {grid-template-columns:1fr;}
+ .hubaal-site .value-card {padding:24px;}
+ .hubaal-site .payout-channel-group {min-height:270px;padding:24px;}
+ .hubaal-site .payout-channel-logos {margin-top:26px;}
+ .hubaal-site .payout-channel-currency {align-items:flex-start;gap:16px;}
+ .hubaal-site .payout-channel-currency strong span {display:block;margin:3px 0 0;}
+ .hubaal-site .payout-capability + .payout-capability {border-top:1px solid var(--hb-line);padding-top:24px;}
+ .hubaal-site .hubaal-about-office {padding:26px;}
+ .hubaal-site .hubaal-about-location {font-size:28px;}
+ .hubaal-site #partner-form > div > div:nth-child(2) > div {padding:24px;}
+}
+@media(prefers-reduced-motion:reduce) {.hubaal-site * {transition:none!important;}}
+
+.hubaal-site #api a:focus-visible {outline-color:#D9F1E8;}

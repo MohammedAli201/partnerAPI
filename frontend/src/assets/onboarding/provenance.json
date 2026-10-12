@@ -1,0 +1,11 @@
+{
+  "tool": "built-in image_gen",
+  "prompt": "Use case: photorealistic people. Asset type: a transparent cutout for Hubaal Express's public website onboarding section. Create one original, generic Somali man in his early 30s, warm natural smile, short black hair, wearing a refined midnight-indigo casual jacket over an ivory shirt, holding a plain smartphone comfortably with both hands at waist height. He is a fictional illustrative website model, not a founder or employee. Portrait composition from head to upper thighs, complete head, hands and phone comfortably inside the frame; front-facing with a gentle natural turn. Clean premium editorial studio photography, realistic skin texture, soft flattering daylight, understated and human. No text, no logos, no money, no banknotes, no props other than the smartphone. Keep the entire background genuinely transparent with clean hair and jacket edges. The site will add its own warm apricot shape behind the figure; do not include any shape or shadow background.",
+  "transparent_background": true,
+  "source_image": "C:\\Users\\Mohamed\\.codex\\generated_images\\01a13022-6526-75c0-9c2d-1f9706cf8ed2\\exec-fa04baa0-3aa4-4e03-963f-a60d824d8787.png",
+  "size": [
+    1024,
+    1536
+  ],
+  "role": "Generic illustrative model; not a Hubaal founder or employee"
+}

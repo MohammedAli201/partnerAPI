@@ -1,11 +1,7 @@
-import { Check, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Reveal from "./Reveal";
 
-const POINTS = [
-  "Submit payout instructions.",
-  "Keep your transaction references attached.",
-  "Receive payout status updates.",
-];
+
 
 const InstructionVisual = () => (
   <div className="max-w-[460px] mx-auto rounded-[24px] bg-[#1B2636] ring-1 ring-white/15 p-6 sm:p-8 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.5)]" data-testid="api-example">
@@ -27,20 +23,14 @@ const InstructionVisual = () => (
 
 const PartnerApi = () => (
   <section id="api" data-testid="partner-api" className="relative py-16 sm:py-24 lg:py-28 bg-espresso overflow-hidden">
-    <div aria-hidden="true" className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)", backgroundSize: "26px 26px" }} />
     <div className="relative max-w-[1200px] mx-auto px-5 sm:px-8 grid lg:grid-cols-12 gap-14 lg:gap-16 items-center">
       <div className="lg:col-span-5 order-2 lg:order-1"><Reveal><InstructionVisual /></Reveal></div>
       <div className="lg:col-span-7 order-1 lg:order-2">
         <Reveal>
-          <p className="inline-block text-sm font-bold text-brass border-b-2 border-brass/60 pb-1">Partner integration</p>
-          <h2 className="mt-5 font-extrabold uppercase tracking-[-0.01em] leading-[1.05] text-[2rem] sm:text-[2.75rem] lg:text-[3.25rem] text-white max-w-xl">Connect your system to Hubaal.</h2>
-          <p className="mt-6 text-base sm:text-lg leading-[1.65] text-white/70 max-w-xl">Submit payout instructions through our API and receive payout outcomes in your system.</p>
-          <ul className="mt-7 space-y-3.5">
-            {POINTS.map(point => <li key={point} className="flex items-center gap-3.5 text-[15px] sm:text-base text-white/85">
-              <span className="w-5 h-5 rounded-full bg-brass flex items-center justify-center shrink-0"><Check size={11} className="text-espresso" strokeWidth={3.5} aria-hidden="true" /></span>
-              {point}
-            </li>)}
-          </ul>
+          <p className="site-eyebrow">Partner integration</p>
+          <h2 className="mt-5 font-extrabold uppercase tracking-[-0.01em] leading-[1.05] text-[2rem] sm:text-[2.75rem] lg:text-[3.25rem] text-white max-w-xl">Built into your workflow.</h2>
+          <p className="mt-6 text-base sm:text-lg leading-[1.65] text-white/70 max-w-xl">Send instructions through the API, retain your transaction references and receive status updates in your own system.</p>
+
           <a href="/partners/integration" data-testid="api-cta" className="group mt-9 inline-flex items-center gap-2.5 bg-gold text-white font-semibold text-base px-7 py-3.5 rounded-full ring-1 ring-white/25 hover:bg-gold-glow transition-colors duration-300">
             View integration guide <ArrowRight size={17} strokeWidth={2.5} className="transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
           </a>

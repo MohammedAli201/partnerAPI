@@ -1,0 +1,24 @@
+/* Typography measured from bel.money: font roles and responsive scales.
+   The Hubaal copy, components, animations and colour palette remain their own. */
+.source-landing,.hubaal-site {font-family:Inter,Arial,sans-serif;font-size:clamp(16px,2vw,18px);font-weight:400;line-height:1.5;font-style:normal;letter-spacing:0;font-feature-settings:normal;}
+.source-landing h1,.source-landing h2,.source-landing h3,.source-landing h4,.source-landing h5,
+.hubaal-site h1,.hubaal-site h2,.hubaal-site h3,.hubaal-site h4,.hubaal-site h5 {font-family:'League Spartan',Arial,sans-serif;font-style:normal;}
+.source-landing h1,.hubaal-site h1 {font-size:clamp(32px,6vw,72px);font-weight:700;line-height:.9;letter-spacing:-.01em;}
+.source-landing #hero h1 {text-transform:uppercase;}
+.source-landing h2.h2,.hubaal-site h2 {font-size:clamp(32px,6vw,58px);font-weight:500;line-height:.9;letter-spacing:-.01em;}
+.source-landing h3 {font-size:clamp(20px,3vw,24px);font-weight:700;line-height:1.2;letter-spacing:0;}
+.source-landing .lead {font-family:Inter,Arial,sans-serif;font-size:clamp(16px,2vw,18px);font-weight:400;line-height:1.5;letter-spacing:0;}
+.source-landing .eyebrow {font-family:'Roboto Mono',monospace;font-size:12px;font-weight:500;line-height:1.5;letter-spacing:.14em;text-transform:uppercase;}
+.source-landing .btn-primary,.source-landing .btn-secondary {font-family:Inter,Arial,sans-serif;font-size:16px;font-weight:700;line-height:1.2;letter-spacing:0;}
+.source-landing input,.source-landing select,.source-landing textarea,.source-landing button {font-family:Inter,Arial,sans-serif;}
+.source-landing .font-mono,.hubaal-site .font-mono {font-family:'Roboto Mono',monospace;}
+.source-landing .channel-scroll-set > span:first-child {font-family:Roboto,Arial,sans-serif;font-weight:500;font-size:12px;letter-spacing:.1em;}
+.source-landing [data-testid='site-nav'] nav a {font-family:Inter,Arial,sans-serif;font-weight:500;font-size:15px;}
+.source-landing [data-testid='site-nav'] .btn-primary {font-size:14px;}
+.source-landing [data-testid='brand-logo'] > span,.source-landing [data-testid='footer-logo'] > span,.source-landing [data-testid='mobile-brand-logo'] > span {font-family:'League Spartan',Arial,sans-serif;font-size:23px;font-weight:700;letter-spacing:-.01em;}
+.source-landing [data-testid='site-footer'] {font-family:Inter,Arial,sans-serif;line-height:1.5;}
+.source-landing [data-testid='site-footer'] .font-mono {font-family:'Roboto Mono',monospace;}
+/* Code is the one place where a monospaced body is functional. */
+.source-landing [data-testid='api-code-block'] {font-family:'Roboto Mono',monospace;letter-spacing:0;}
+
+.App [data-sonner-toaster] {font-family:Inter,Arial,sans-serif;}

@@ -1,6 +1,5 @@
 import { MapPin } from "lucide-react";
 import Reveal from "./Reveal";
-import "./About.css";
 
 const About = () => (
   <section id="about" data-testid="about-section" className="hubaal-about" aria-labelledby="about-title">
@@ -12,11 +11,10 @@ const About = () => (
             <span className="hubaal-about-rule" aria-hidden="true" />
           </div>
           <h2 id="about-title" className="hubaal-about-title">
-            Your local team <span>in Mogadishu.</span>
+            Meet Hubaal <span>in Mogadishu.</span>
           </h2>
           <p className="hubaal-about-copy">
-            Our Somalia-based team is your contact for partnership enquiries,
-            payout coordination and reconciliation.
+            Speak directly with our team about your proposed Somalia corridor.
           </p>
         </Reveal>
         <Reveal delay={0.12} className="hubaal-about-office-wrapper">
